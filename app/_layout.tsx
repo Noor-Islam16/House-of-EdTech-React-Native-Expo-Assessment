@@ -1,31 +1,43 @@
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native";
+import "@/global.css";
+import { useAuthStore, useCourseStore, usePreferenceStore } from "@src/store";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import "react-native-reanimated";
+import { useEffect } from "react";
 
-import { useColorScheme } from "@/src/hooks/use-color-scheme";
-
-export const unstable_settings = {
-  anchor: "(tabs)",
-};
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 3,
+      staleTime: 1000 * 60 * 5, // 5 min
+    },
+  },
+});
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  const hydrateAuth = useAuthStore((s) => s.hydrate);
+  const hydrateCourses = useCourseStore((s) => s.hydrate);
+  const hydratePrefs = usePreferenceStore((s) => s.hydrate);
+  const theme = usePreferenceStore((s) => s.theme);
+
+  useEffect(() => {
+    Promise.all([hydrateAuth(), hydrateCourses(), hydratePrefs()]);
+  }, []);
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+    <QueryClientProvider client={queryClient}>
+      <StatusBar style={theme === "dark" ? "light" : "dark"} />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(tabs)" />
         <Stack.Screen
-          name="modal"
-          options={{ presentation: "modal", title: "Modal" }}
+          name="course/[id]"
+          options={{
+            animation: "slide_from_right",
+          }}
         />
       </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    </QueryClientProvider>
   );
 }
