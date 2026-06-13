@@ -1,8 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
+import { CourseCard, CourseListCard } from "@src/components/ui";
 import { COLORS } from "@src/constants/colors";
 import { courseApi } from "@src/services/api/courseApi";
 import { useAuthStore, useCourseStore } from "@src/store";
-import type { Course } from "@src/types";
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
@@ -27,126 +27,6 @@ const CATEGORIES = [
   "AI",
   "Cloud",
 ];
-
-const CourseCard = ({
-  item,
-  onBookmark,
-  isBookmarked,
-}: {
-  item: Course;
-  onBookmark: (id: string) => void;
-  isBookmarked: boolean;
-}) => (
-  <TouchableOpacity
-    className="bg-card rounded-2xl mr-4 overflow-hidden"
-    style={{ width: 220 }}
-    onPress={() => router.push(`/course/${item.id}`)}
-    activeOpacity={0.85}
-  >
-    <Image
-      source={{ uri: item.thumbnail }}
-      className="w-full"
-      style={{ height: 150 }}
-      resizeMode="cover"
-    />
-    <View className="p-3">
-      <View className="flex-row items-center mb-1">
-        <View className="bg-primary/10 px-2 py-0.5 rounded-full">
-          <Text className="text-primary text-xs font-semibold">
-            {item.category}
-          </Text>
-        </View>
-      </View>
-      <Text className="text-text font-bold text-sm mb-1" numberOfLines={2}>
-        {item.title}
-      </Text>
-      <View className="flex-row items-center justify-between mt-1">
-        <View className="flex-row items-center gap-1">
-          <Image
-            source={{ uri: item.instructor.avatar }}
-            className="w-5 h-5 rounded-full"
-          />
-          <Text className="text-textMuted text-xs" numberOfLines={1}>
-            {item.instructor.firstName}
-          </Text>
-        </View>
-        <View className="flex-row items-center gap-1">
-          <Ionicons name="star" size={12} color={COLORS.warning} />
-          <Text className="text-xs text-textMuted">{item.rating}</Text>
-        </View>
-      </View>
-      <View className="flex-row items-center justify-between mt-2">
-        <Text className="text-primary font-bold text-sm">${item.price}</Text>
-        <TouchableOpacity onPress={() => onBookmark(item.id)} className="p-1">
-          <Ionicons
-            name={isBookmarked ? "bookmark" : "bookmark-outline"}
-            size={18}
-            color={isBookmarked ? COLORS.primary : COLORS.textMuted}
-          />
-        </TouchableOpacity>
-      </View>
-    </View>
-  </TouchableOpacity>
-);
-
-const AllCourseCard = ({
-  item,
-  onBookmark,
-  isBookmarked,
-}: {
-  item: Course;
-  onBookmark: (id: string) => void;
-  isBookmarked: boolean;
-}) => (
-  <TouchableOpacity
-    className="bg-card rounded-2xl mb-3 flex-row overflow-hidden"
-    style={{
-      elevation: 2,
-      shadowColor: "#000",
-      shadowOpacity: 0.06,
-      shadowRadius: 8,
-      shadowOffset: { width: 0, height: 2 },
-    }}
-    onPress={() => router.push(`/course/${item.id}`)}
-    activeOpacity={0.85}
-  >
-    <Image
-      source={{ uri: item.thumbnail }}
-      style={{ width: 110, height: "100%", minHeight: 100 }}
-      resizeMode="cover"
-    />
-    <View className="flex-1 p-3 justify-between">
-      <View>
-        <Text className="text-text font-bold text-sm mb-0.5" numberOfLines={2}>
-          {item.title}
-        </Text>
-        <View className="flex-row items-center gap-1 mb-1">
-          <Image
-            source={{ uri: item.instructor.avatar }}
-            className="w-4 h-4 rounded-full"
-          />
-          <Text className="text-textMuted text-xs">
-            {item.instructor.firstName} {item.instructor.lastName}
-          </Text>
-        </View>
-      </View>
-      <View className="flex-row items-center justify-between">
-        <View className="flex-row items-center gap-1">
-          <Ionicons name="star" size={12} color={COLORS.warning} />
-          <Text className="text-xs text-textMuted">{item.rating}</Text>
-        </View>
-        <Text className="text-primary font-bold text-sm">${item.price}</Text>
-        <TouchableOpacity onPress={() => onBookmark(item.id)} className="p-1">
-          <Ionicons
-            name={isBookmarked ? "bookmark" : "bookmark-outline"}
-            size={16}
-            color={isBookmarked ? COLORS.primary : COLORS.textMuted}
-          />
-        </TouchableOpacity>
-      </View>
-    </View>
-  </TouchableOpacity>
-);
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -209,7 +89,7 @@ export default function HomeScreen() {
           style={{ paddingTop: insets.top + 12 }}
         >
           <View className="flex-row items-center justify-between mb-4">
-            <View>
+            <View className="flex-1 mr-3">
               <Text className="text-white/70 text-sm">
                 Hello, {user?.name?.split(" ")[0] ?? "Learner"} 👋
               </Text>
@@ -261,7 +141,7 @@ export default function HomeScreen() {
         </View>
 
         {isLoading ? (
-          <View className="flex-1 items-center justify-center py-20">
+          <View className="items-center justify-center py-20">
             <ActivityIndicator size="large" color={COLORS.primary} />
             <Text className="text-textMuted text-sm mt-3">
               Loading courses...
@@ -312,7 +192,7 @@ export default function HomeScreen() {
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={{ paddingHorizontal: 20 }}
+                  contentContainerStyle={{ paddingHorizontal: 20, gap: 0 }}
                 >
                   {featured.map((item) => (
                     <CourseCard
@@ -357,7 +237,7 @@ export default function HomeScreen() {
                 </View>
               ) : (
                 filtered.map((item) => (
-                  <AllCourseCard
+                  <CourseListCard
                     key={item.id}
                     item={item}
                     isBookmarked={bookmarks.includes(item.id)}
