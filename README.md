@@ -230,22 +230,6 @@ eas build -p android --profile preview
 
 ---
 
-## Screenshots
-
-| Splash           | Login            | Register         |
-| ---------------- | ---------------- | ---------------- |
-| _add screenshot_ | _add screenshot_ | _add screenshot_ |
-
-| Home             | Course Detail    | Bookmarks        |
-| ---------------- | ---------------- | ---------------- |
-| _add screenshot_ | _add screenshot_ | _add screenshot_ |
-
-| WebView          | Profile          | Offline          |
-| ---------------- | ---------------- | ---------------- |
-| _add screenshot_ | _add screenshot_ | _add screenshot_ |
-
----
-
 ## API Reference
 
 Base URL: `https://api.freeapi.app`
