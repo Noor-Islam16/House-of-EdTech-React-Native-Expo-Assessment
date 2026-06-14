@@ -35,7 +35,7 @@ A production-ready Learning Management System built with React Native Expo, feat
 - WebView course content viewer with bidirectional communication
 - Local notifications (5 bookmarks + 24h reminder)
 - Offline detection banner
-- Profile with avatar picker + dark mode toggle
+- Profile with avatar picker
 - Pull to refresh
 - Error boundary + retry logic
 - Animated splash screen
@@ -56,7 +56,7 @@ A production-ready Learning Management System built with React Native Expo, feat
 ```bash
 # clone repo
 git clone https://github.com/Noor-Islam16/House-of-EdTech-React-Native-Expo-Assessment.git
-cd EduFlex
+cd House-of-EdTech-React-Native-Expo-Assessment
 
 # install dependencies
 npm install
