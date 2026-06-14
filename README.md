@@ -22,7 +22,6 @@ A production-ready Learning Management System built with React Native Expo, feat
 | Network       | Expo Network                 |
 | WebView       | React Native WebView         |
 | Image Picker  | Expo Image Picker            |
-| List          | LegendList v3                |
 
 ---
 
@@ -56,7 +55,7 @@ A production-ready Learning Management System built with React Native Expo, feat
 
 ```bash
 # clone repo
-git clone https://github.com/yourusername/EduFlex.git
+git clone https://github.com/Noor-Islam16/House-of-EdTech-React-Native-Expo-Assessment.git
 cd EduFlex
 
 # install dependencies
@@ -179,11 +178,7 @@ Auth tokens stored encrypted. AsyncStorage used only for non-sensitive data (boo
 
 Expo Router provides type-safe navigation with automatic deep linking via `typedRoutes: true`.
 
-### 6. LegendList for performance
-
-Replaces FlatList with better recycling and estimated item size for smooth 60fps scrolling.
-
-### 7. Axios interceptors
+### 6. Axios interceptors
 
 - Request: auto-attaches Bearer token from SecureStore
 - Response: retry up to 3 times on network failure with exponential backoff
@@ -268,6 +263,7 @@ Base URL: `https://api.freeapi.app`
 ## Demo Video
 
 _Link to demo video — 3-5 minutes walkthrough_
+https://drive.google.com/file/d/147uVdk8E2m5_9vDG8UnPOFCJ-jxwedMX/view?usp=drive_link
 
 ---
 
