@@ -1,7 +1,7 @@
 import { isValidAvatar } from "@/src/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "@src/constants/colors";
-import { useAuthStore, useCourseStore, usePreferenceStore } from "@src/store";
+import { useAuthStore, useCourseStore } from "@src/store";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -16,6 +16,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface SettingRowProps {
@@ -60,7 +61,6 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { user, logout, setUser } = useAuthStore();
   const { bookmarks, enrollments, completedCourses } = useCourseStore();
-  const { theme } = usePreferenceStore();
 
   const [editVisible, setEditVisible] = useState(false);
   const [editName, setEditName] = useState(user?.name ?? "");
@@ -125,87 +125,81 @@ export default function ProfileScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* ── Header ── */}
+      {/* ── Fixed Header ── */}
+      <View
+        className="bg-primary overflow-hidden"
+        style={{ paddingTop: insets.top + 16, paddingBottom: 48 }}
+      >
         <View
-          className="bg-primary overflow-hidden"
-          style={{ paddingTop: insets.top + 16, paddingBottom: 48 }}
-        >
-          {/* Decorative circles */}
-          <View
-            className="absolute bg-white/10 rounded-full"
-            style={{ width: 200, height: 200, top: -60, right: -50 }}
-          />
-          <View
-            className="absolute bg-white/5 rounded-full"
-            style={{ width: 130, height: 130, top: 40, right: 60 }}
-          />
-          <View
-            className="absolute bg-white/10 rounded-full"
-            style={{ width: 80, height: 80, bottom: -20, left: -20 }}
-          />
+          className="absolute bg-white/10 rounded-full"
+          style={{ width: 200, height: 200, top: -60, right: -50 }}
+        />
+        <View
+          className="absolute bg-white/5 rounded-full"
+          style={{ width: 130, height: 130, top: 40, right: 60 }}
+        />
+        <View
+          className="absolute bg-white/10 rounded-full"
+          style={{ width: 80, height: 80, bottom: -20, left: -20 }}
+        />
 
-          <View className="px-6">
+        <View className="px-6">
+          <Text
+            className="text-white text-2xl tracking-widest uppercase mb-5"
+            style={{ fontFamily: "Nunito-Bold" }}
+          >
+            My Profile
+          </Text>
+          <View className="items-center">
+            <TouchableOpacity
+              onPress={handlePickAvatar}
+              activeOpacity={0.85}
+              className="relative"
+            >
+              <View
+                className="w-24 h-24 rounded-3xl overflow-hidden bg-white/20"
+                style={{ borderWidth: 3, borderColor: "rgba(255,255,255,0.4)" }}
+              >
+                <Image
+                  source={avatarSource}
+                  style={{ width: "100%", height: "100%" }}
+                  resizeMode="cover"
+                />
+              </View>
+              <View
+                className="absolute bottom-0 right-0 w-8 h-8 bg-white rounded-full items-center justify-center"
+                style={{ elevation: 4 }}
+              >
+                <Ionicons name="camera" size={15} color={COLORS.primary} />
+              </View>
+            </TouchableOpacity>
             <Text
-              className="text-white text-2xl tracking-widest uppercase mb-5"
+              className="text-white text-2xl mt-3"
               style={{ fontFamily: "Nunito-Bold" }}
             >
-              My Profile
+              {user?.name ?? "User"}
             </Text>
-
-            {/* Avatar + name */}
-            <View className="items-center">
-              <TouchableOpacity
-                onPress={handlePickAvatar}
-                activeOpacity={0.85}
-                className="relative"
-              >
-                <View
-                  className="w-24 h-24 rounded-3xl overflow-hidden bg-white/20"
-                  style={{
-                    borderWidth: 3,
-                    borderColor: "rgba(255,255,255,0.4)",
-                  }}
-                >
-                  <Image
-                    source={avatarSource}
-                    style={{ width: "100%", height: "100%" }}
-                    resizeMode="contain"
-                  />
-                </View>
-                <View
-                  className="absolute bottom-0 right-0 w-8 h-8 bg-white rounded-full items-center justify-center"
-                  style={{ elevation: 4 }}
-                >
-                  <Ionicons name="camera" size={15} color={COLORS.primary} />
-                </View>
-              </TouchableOpacity>
-
-              <Text
-                className="text-white text-2xl mt-3"
-                style={{ fontFamily: "Nunito-Bold" }}
-              >
-                {user?.name ?? "User"}
-              </Text>
-              <Text
-                className="text-white/60 text-sm mt-0.5"
-                style={{ fontFamily: "Nunito-Regular" }}
-              >
-                {user?.email ?? ""}
-              </Text>
-            </View>
+            <Text
+              className="text-white/60 text-sm mt-0.5"
+              style={{ fontFamily: "Nunito-Regular" }}
+            >
+              {user?.email ?? ""}
+            </Text>
           </View>
         </View>
+      </View>
 
-        {/* ── Sheet overlay ── */}
-        <View
-          className="bg-background"
-          style={{
-            borderTopLeftRadius: 32,
-            borderTopRightRadius: 32,
-            marginTop: -24,
-          }}
-        >
+      {/* ── Scrollable sheet ── */}
+      <View
+        className="flex-1 bg-background"
+        style={{
+          borderTopLeftRadius: 32,
+          borderTopRightRadius: 32,
+          marginTop: -24,
+          overflow: "hidden",
+        }}
+      >
+        <ScrollView showsVerticalScrollIndicator={false}>
           {/* Stats */}
           <View className="flex-row px-5 gap-3 mt-6">
             <TouchableOpacity
@@ -354,7 +348,7 @@ export default function ProfileScreen() {
             />
           </View>
 
-          {/* App info */}
+          {/* App */}
           <View
             className="mx-5 mt-4 bg-card rounded-2xl overflow-hidden"
             style={{
@@ -404,10 +398,10 @@ export default function ProfileScreen() {
               </Text>
             </TouchableOpacity>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </View>
 
-      {/* Edit Modal */}
+      {/* ── Edit Profile Modal ── */}
       <Modal
         visible={editVisible}
         animationType="slide"
@@ -416,91 +410,155 @@ export default function ProfileScreen() {
       >
         <View
           className="flex-1 justify-end"
-          style={{ backgroundColor: "rgba(0,0,0,0.4)" }}
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
         >
-          <View className="bg-card rounded-t-[32px] px-5 pt-5 pb-8">
-            <View className="w-10 h-1 bg-border rounded-full self-center mb-5" />
-            <View className="flex-row items-center justify-between mb-5">
+          <View
+            className="bg-card rounded-t-[32px]"
+            style={{ maxHeight: "80%" }}
+          >
+            {/* Handle */}
+            <View className="w-10 h-1 bg-border rounded-full self-center mt-4 mb-2" />
+
+            {/* Modal header */}
+            <View className="flex-row items-center justify-between px-5 py-4 border-b border-border">
               <Text
                 className="text-text text-lg"
                 style={{ fontFamily: "Nunito-Bold" }}
               >
                 Edit Profile
               </Text>
-              <TouchableOpacity onPress={() => setEditVisible(false)}>
-                <Ionicons name="close" size={22} color={COLORS.textMuted} />
+              <TouchableOpacity
+                onPress={() => setEditVisible(false)}
+                className="w-8 h-8 bg-card border border-border rounded-full items-center justify-center"
+              >
+                <Ionicons name="close" size={18} color={COLORS.textMuted} />
               </TouchableOpacity>
             </View>
 
-            <Text className="text-text font-semibold text-sm mb-2">
-              Display Name
-            </Text>
-            <View
-              className="flex-row items-center bg-background border border-border rounded-xl px-4 mb-4"
-              style={{ height: 52 }}
+            <KeyboardAwareScrollView
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+              enableOnAndroid
+              extraScrollHeight={20}
+              contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
             >
-              <Ionicons
-                name="person-outline"
-                size={18}
-                color={COLORS.textMuted}
-              />
-              <TextInput
-                className="flex-1 ml-3 text-text text-sm"
-                style={{ fontFamily: "Nunito-Regular" }}
-                placeholder="Enter your name"
-                placeholderTextColor={COLORS.textMuted}
-                value={editName}
-                onChangeText={setEditName}
-              />
-            </View>
-
-            <Text className="text-text font-semibold text-sm mb-2">Email</Text>
-            <View
-              className="flex-row items-center bg-background border border-border rounded-xl px-4 mb-6"
-              style={{ height: 52 }}
-            >
-              <Ionicons
-                name="mail-outline"
-                size={18}
-                color={COLORS.textMuted}
-              />
-              <TextInput
-                className="flex-1 ml-3 text-text text-sm"
-                style={{ fontFamily: "Nunito-Regular" }}
-                placeholder="Enter your email"
-                placeholderTextColor={COLORS.textMuted}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                value={editEmail}
-                onChangeText={setEditEmail}
-              />
-            </View>
-
-            <TouchableOpacity
-              onPress={handleSaveProfile}
-              disabled={editLoading}
-              className="bg-primary rounded-2xl items-center justify-center"
-              style={{
-                height: 54,
-                elevation: 4,
-                shadowColor: COLORS.primary,
-                shadowOpacity: 0.3,
-                shadowRadius: 8,
-                shadowOffset: { width: 0, height: 4 },
-              }}
-              activeOpacity={0.85}
-            >
-              {editLoading ? (
-                <ActivityIndicator color="white" />
-              ) : (
-                <Text
-                  className="text-white text-base"
-                  style={{ fontFamily: "Nunito-Bold" }}
+              {/* Avatar picker inside modal */}
+              <View className="items-center mb-6">
+                <TouchableOpacity
+                  onPress={handlePickAvatar}
+                  activeOpacity={0.85}
+                  className="relative"
                 >
-                  Save Changes
+                  <View
+                    className="w-20 h-20 rounded-2xl overflow-hidden bg-primary/10"
+                    style={{
+                      borderWidth: 2,
+                      borderColor: COLORS.primary + "40",
+                    }}
+                  >
+                    <Image
+                      source={avatarSource}
+                      style={{ width: "100%", height: "100%" }}
+                      resizeMode="cover"
+                    />
+                  </View>
+                  <View className="absolute bottom-0 right-0 w-7 h-7 bg-primary rounded-full items-center justify-center">
+                    <Ionicons name="camera" size={13} color="white" />
+                  </View>
+                </TouchableOpacity>
+                <Text
+                  className="text-textMuted text-xs mt-2"
+                  style={{ fontFamily: "Nunito-Regular" }}
+                >
+                  Tap to change photo
                 </Text>
-              )}
-            </TouchableOpacity>
+              </View>
+
+              {/* Name */}
+              <Text
+                className="text-text text-sm mb-2 ml-1"
+                style={{ fontFamily: "Nunito-SemiBold" }}
+              >
+                Display Name
+              </Text>
+              <View
+                className="flex-row items-center bg-background border border-border rounded-2xl px-4 mb-4"
+                style={{ height: 54 }}
+              >
+                <View className="bg-primary/10 rounded-xl p-1.5 mr-3">
+                  <Ionicons
+                    name="person-outline"
+                    size={17}
+                    color={COLORS.primary}
+                  />
+                </View>
+                <TextInput
+                  className="flex-1 text-text text-sm"
+                  style={{ fontFamily: "Nunito-Regular" }}
+                  placeholder="Enter your name"
+                  placeholderTextColor={COLORS.textMuted}
+                  value={editName}
+                  onChangeText={setEditName}
+                />
+              </View>
+
+              {/* Email */}
+              <Text
+                className="text-text text-sm mb-2 ml-1"
+                style={{ fontFamily: "Nunito-SemiBold" }}
+              >
+                Email
+              </Text>
+              <View
+                className="flex-row items-center bg-background border border-border rounded-2xl px-4 mb-6"
+                style={{ height: 54 }}
+              >
+                <View className="bg-primary/10 rounded-xl p-1.5 mr-3">
+                  <Ionicons
+                    name="mail-outline"
+                    size={17}
+                    color={COLORS.primary}
+                  />
+                </View>
+                <TextInput
+                  className="flex-1 text-text text-sm"
+                  style={{ fontFamily: "Nunito-Regular" }}
+                  placeholder="Enter your email"
+                  placeholderTextColor={COLORS.textMuted}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  value={editEmail}
+                  onChangeText={setEditEmail}
+                />
+              </View>
+
+              {/* Save */}
+              <TouchableOpacity
+                onPress={handleSaveProfile}
+                disabled={editLoading}
+                activeOpacity={0.85}
+                className="bg-primary rounded-2xl items-center justify-center"
+                style={{
+                  height: 54,
+                  elevation: 6,
+                  shadowColor: COLORS.primary,
+                  shadowOpacity: 0.35,
+                  shadowRadius: 12,
+                  shadowOffset: { width: 0, height: 6 },
+                }}
+              >
+                {editLoading ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <Text
+                    className="text-white text-base"
+                    style={{ fontFamily: "Nunito-Bold" }}
+                  >
+                    Save Changes
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </KeyboardAwareScrollView>
           </View>
         </View>
       </Modal>

@@ -11,6 +11,7 @@ import {
   Image,
   ScrollView,
   Share,
+  StatusBar,
   Text,
   TouchableOpacity,
   View,
@@ -61,7 +62,6 @@ export default function CourseDetailScreen() {
   });
 
   const course = useMemo(() => courses.find((c) => c.id === id), [courses, id]);
-
   const isBookmarked = bookmarks.includes(id ?? "");
   const isEnrolled = enrollments.includes(id ?? "");
 
@@ -97,6 +97,7 @@ export default function CourseDetailScreen() {
   if (isFetching && !course) {
     return (
       <View className="flex-1 bg-background items-center justify-center">
+        <StatusBar barStyle="dark-content" backgroundColor="white" />
         <ActivityIndicator size="large" color={COLORS.primary} />
         <Text
           className="text-textMuted text-sm mt-3"
@@ -111,6 +112,7 @@ export default function CourseDetailScreen() {
   if (!course) {
     return (
       <View className="flex-1 bg-background items-center justify-center px-8">
+        <StatusBar barStyle="dark-content" backgroundColor="white" />
         <Ionicons name="alert-circle-outline" size={48} color={COLORS.error} />
         <Text
           className="text-text text-lg mt-3 text-center"
@@ -133,341 +135,348 @@ export default function CourseDetailScreen() {
   const totalLessons = CURRICULUM.reduce((a, c) => a + c.lessons, 0);
 
   return (
-    <View className="flex-1 bg-background">
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Hero Image */}
-        <View style={{ position: "relative" }}>
-          <Image
-            source={{ uri: course.thumbnail }}
-            style={{ width: "100%", height: 260 }}
-            resizeMode="cover"
-          />
-          <View
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: "rgba(0,0,0,0.35)",
-            }}
-          />
-          <View
-            style={{ paddingTop: insets.top + 8 }}
-            className="absolute top-0 left-0 right-0 flex-row items-center justify-between px-5"
-          >
-            <TouchableOpacity
-              onPress={() => router.back()}
-              className="w-10 h-10 bg-black/30 rounded-full items-center justify-center"
-            >
-              <Ionicons name="arrow-back" size={20} color="white" />
-            </TouchableOpacity>
-            <View className="flex-row gap-3">
-              <TouchableOpacity
-                onPress={handleShare}
-                className="w-10 h-10 bg-black/30 rounded-full items-center justify-center"
-              >
-                <Ionicons name="share-outline" size={20} color="white" />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => toggleBookmark(id ?? "")}
-                className="w-10 h-10 bg-black/30 rounded-full items-center justify-center"
-              >
-                <Ionicons
-                  name={isBookmarked ? "bookmark" : "bookmark-outline"}
-                  size={20}
-                  color={isBookmarked ? COLORS.warning : "white"}
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
-          <View className="absolute bottom-4 left-5">
-            <View className="bg-primary px-3 py-1 rounded-full">
-              <Text
-                className="text-white text-xs"
-                style={{ fontFamily: "Nunito-Bold" }}
-              >
-                {course.category}
-              </Text>
-            </View>
-          </View>
-        </View>
+    <>
+      <StatusBar barStyle="dark-content" backgroundColor="white" />
 
-        {/* Content */}
-        <View className="px-5 pt-5">
-          {/* Title */}
-          <Text
-            className="text-text text-xl leading-7"
-            style={{ fontFamily: "Nunito-Bold" }}
-          >
-            {course.title}
-          </Text>
+      <View className="flex-1 bg-background">
+        {/* White status bar spacer */}
+        <View style={{ height: insets.top, backgroundColor: "white" }} />
 
-          {/* Instructor */}
-          <View className="flex-row items-center mt-3 gap-3">
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {/* Hero Image */}
+          <View style={{ position: "relative" }}>
             <Image
-              source={{ uri: course.instructor.avatar }}
-              className="w-10 h-10 rounded-full"
+              source={{ uri: course.thumbnail }}
+              style={{ width: "100%", height: 240 }}
+              resizeMode="cover"
             />
-            <View>
-              <Text
-                className="text-text text-sm"
-                style={{ fontFamily: "Nunito-SemiBold" }}
+            <View
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: "rgba(0,0,0,0.35)",
+              }}
+            />
+            {/* Nav buttons */}
+            <View
+              style={{ paddingTop: 8 }}
+              className="absolute top-0 left-0 right-0 flex-row items-center justify-between px-5"
+            >
+              <TouchableOpacity
+                onPress={() => router.back()}
+                className="w-10 h-10 bg-black/30 rounded-full items-center justify-center"
               >
-                {course.instructor.firstName} {course.instructor.lastName}
-              </Text>
-              <Text
-                className="text-textMuted text-xs"
-                style={{ fontFamily: "Nunito-Regular" }}
-              >
-                Course Instructor
-              </Text>
+                <Ionicons name="arrow-back" size={20} color="white" />
+              </TouchableOpacity>
+              <View className="flex-row gap-3">
+                <TouchableOpacity
+                  onPress={handleShare}
+                  className="w-10 h-10 bg-black/30 rounded-full items-center justify-center"
+                >
+                  <Ionicons name="share-outline" size={20} color="white" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => toggleBookmark(id ?? "")}
+                  className="w-10 h-10 bg-black/30 rounded-full items-center justify-center"
+                >
+                  <Ionicons
+                    name={isBookmarked ? "bookmark" : "bookmark-outline"}
+                    size={20}
+                    color={isBookmarked ? COLORS.warning : "white"}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+            {/* Category badge */}
+            <View className="absolute bottom-4 left-5">
+              <View className="bg-primary px-3 py-1 rounded-full">
+                <Text
+                  className="text-white text-xs"
+                  style={{ fontFamily: "Nunito-Bold" }}
+                >
+                  {course.category}
+                </Text>
+              </View>
             </View>
           </View>
 
-          {/* Stats */}
-          <View className="flex-row items-center justify-between bg-card rounded-2xl p-4 mt-4">
-            <View className="items-center flex-1">
-              <View className="flex-row items-center gap-1">
-                <Ionicons name="star" size={16} color={COLORS.warning} />
+          {/* Content */}
+          <View className="px-5 pt-5">
+            {/* Title */}
+            <Text
+              className="text-text text-xl leading-7"
+              style={{ fontFamily: "Nunito-Bold" }}
+            >
+              {course.title}
+            </Text>
+
+            {/* Instructor */}
+            <View className="flex-row items-center mt-3 gap-3">
+              <Image
+                source={{ uri: course.instructor.avatar }}
+                className="w-10 h-10 rounded-full"
+              />
+              <View>
+                <Text
+                  className="text-text text-sm"
+                  style={{ fontFamily: "Nunito-SemiBold" }}
+                >
+                  {course.instructor.firstName} {course.instructor.lastName}
+                </Text>
+                <Text
+                  className="text-textMuted text-xs"
+                  style={{ fontFamily: "Nunito-Regular" }}
+                >
+                  Course Instructor
+                </Text>
+              </View>
+            </View>
+
+            {/* Stats */}
+            <View className="flex-row items-center justify-between bg-card rounded-2xl p-4 mt-4">
+              <View className="items-center flex-1">
+                <View className="flex-row items-center gap-1">
+                  <Ionicons name="star" size={16} color={COLORS.warning} />
+                  <Text
+                    className="text-text text-base"
+                    style={{ fontFamily: "Nunito-Bold" }}
+                  >
+                    {course.rating}
+                  </Text>
+                </View>
+                <Text
+                  className="text-textMuted text-xs mt-0.5"
+                  style={{ fontFamily: "Nunito-Regular" }}
+                >
+                  Rating
+                </Text>
+              </View>
+              <View className="w-px h-8 bg-border" />
+              <View className="items-center flex-1">
                 <Text
                   className="text-text text-base"
                   style={{ fontFamily: "Nunito-Bold" }}
                 >
-                  {course.rating}
+                  {totalLessons}
+                </Text>
+                <Text
+                  className="text-textMuted text-xs mt-0.5"
+                  style={{ fontFamily: "Nunito-Regular" }}
+                >
+                  Lessons
                 </Text>
               </View>
-              <Text
-                className="text-textMuted text-xs mt-0.5"
-                style={{ fontFamily: "Nunito-Regular" }}
-              >
-                Rating
-              </Text>
-            </View>
-            <View className="w-px h-8 bg-border" />
-            <View className="items-center flex-1">
-              <Text
-                className="text-text text-base"
-                style={{ fontFamily: "Nunito-Bold" }}
-              >
-                {totalLessons}
-              </Text>
-              <Text
-                className="text-textMuted text-xs mt-0.5"
-                style={{ fontFamily: "Nunito-Regular" }}
-              >
-                Lessons
-              </Text>
-            </View>
-            <View className="w-px h-8 bg-border" />
-            <View className="items-center flex-1">
-              <Text
-                className="text-text text-base"
-                style={{ fontFamily: "Nunito-Bold" }}
-              >
-                6
-              </Text>
-              <Text
-                className="text-textMuted text-xs mt-0.5"
-                style={{ fontFamily: "Nunito-Regular" }}
-              >
-                Weeks
-              </Text>
-            </View>
-            <View className="w-px h-8 bg-border" />
-            <View className="items-center flex-1">
-              <Text
-                className="text-success text-base"
-                style={{ fontFamily: "Nunito-Bold" }}
-              >
-                ${course.price}
-              </Text>
-              <Text
-                className="text-textMuted text-xs mt-0.5"
-                style={{ fontFamily: "Nunito-Regular" }}
-              >
-                Price
-              </Text>
-            </View>
-          </View>
-
-          {/* Description */}
-          <View className="mt-5">
-            <Text
-              className="text-text text-base mb-2"
-              style={{ fontFamily: "Nunito-Bold" }}
-            >
-              About This Course
-            </Text>
-            <Text
-              className="text-textMuted text-sm leading-6"
-              style={{ fontFamily: "Nunito-Regular" }}
-            >
-              {course.description} Learn from industry experts and build
-              portfolio-worthy projects. This course is designed for developers
-              who want to take their skills to the next level with hands-on
-              practice and real-world scenarios.
-            </Text>
-          </View>
-
-          {/* What you'll learn */}
-          <View className="mt-5">
-            <Text
-              className="text-text text-base mb-3"
-              style={{ fontFamily: "Nunito-Bold" }}
-            >
-              What You'll Learn
-            </Text>
-            <View className="bg-card rounded-2xl p-4 gap-3">
-              {WHAT_YOU_LEARN.map((item, i) => (
-                <View key={i} className="flex-row items-start gap-3">
-                  <View className="w-5 h-5 bg-success/20 rounded-full items-center justify-center mt-0.5">
-                    <Ionicons
-                      name="checkmark"
-                      size={12}
-                      color={COLORS.success}
-                    />
-                  </View>
-                  <Text
-                    className="text-text text-sm flex-1"
-                    style={{ fontFamily: "Nunito-Regular" }}
-                  >
-                    {item}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          </View>
-
-          {/* Curriculum */}
-          <View className="mt-5">
-            <Text
-              className="text-text text-base mb-3"
-              style={{ fontFamily: "Nunito-Bold" }}
-            >
-              Curriculum
-            </Text>
-            <View className="gap-2">
-              {CURRICULUM.map((section, i) => (
-                <TouchableOpacity
-                  key={i}
-                  onPress={() =>
-                    setExpandedSection(expandedSection === i ? null : i)
-                  }
-                  activeOpacity={0.8}
-                  className="bg-card rounded-2xl overflow-hidden"
+              <View className="w-px h-8 bg-border" />
+              <View className="items-center flex-1">
+                <Text
+                  className="text-text text-base"
+                  style={{ fontFamily: "Nunito-Bold" }}
                 >
-                  <View className="flex-row items-center justify-between p-4">
-                    <View className="flex-row items-center gap-3 flex-1">
-                      <View className="w-8 h-8 bg-primary/10 rounded-full items-center justify-center">
-                        <Text
-                          className="text-primary text-xs"
-                          style={{ fontFamily: "Nunito-Bold" }}
-                        >
-                          {i + 1}
-                        </Text>
-                      </View>
-                      <View className="flex-1">
-                        <Text
-                          className="text-text text-sm"
-                          style={{ fontFamily: "Nunito-SemiBold" }}
-                          numberOfLines={1}
-                        >
-                          {section.title}
-                        </Text>
-                        <Text
-                          className="text-textMuted text-xs mt-0.5"
-                          style={{ fontFamily: "Nunito-Regular" }}
-                        >
-                          {section.lessons} lessons • {section.duration}
-                        </Text>
-                      </View>
+                  6
+                </Text>
+                <Text
+                  className="text-textMuted text-xs mt-0.5"
+                  style={{ fontFamily: "Nunito-Regular" }}
+                >
+                  Weeks
+                </Text>
+              </View>
+              <View className="w-px h-8 bg-border" />
+              <View className="items-center flex-1">
+                <Text
+                  className="text-success text-base"
+                  style={{ fontFamily: "Nunito-Bold" }}
+                >
+                  ${course.price}
+                </Text>
+                <Text
+                  className="text-textMuted text-xs mt-0.5"
+                  style={{ fontFamily: "Nunito-Regular" }}
+                >
+                  Price
+                </Text>
+              </View>
+            </View>
+
+            {/* Description */}
+            <View className="mt-5">
+              <Text
+                className="text-text text-base mb-2"
+                style={{ fontFamily: "Nunito-Bold" }}
+              >
+                About This Course
+              </Text>
+              <Text
+                className="text-textMuted text-sm leading-6"
+                style={{ fontFamily: "Nunito-Regular" }}
+              >
+                {course.description} Learn from industry experts and build
+                portfolio-worthy projects. This course is designed for
+                developers who want to take their skills to the next level with
+                hands-on practice and real-world scenarios.
+              </Text>
+            </View>
+
+            {/* What you'll learn */}
+            <View className="mt-5">
+              <Text
+                className="text-text text-base mb-3"
+                style={{ fontFamily: "Nunito-Bold" }}
+              >
+                What You'll Learn
+              </Text>
+              <View className="bg-card rounded-2xl p-4 gap-3">
+                {WHAT_YOU_LEARN.map((item, i) => (
+                  <View key={i} className="flex-row items-start gap-3">
+                    <View className="w-5 h-5 bg-success/20 rounded-full items-center justify-center mt-0.5">
+                      <Ionicons
+                        name="checkmark"
+                        size={12}
+                        color={COLORS.success}
+                      />
                     </View>
-                    <Ionicons
-                      name={
-                        expandedSection === i ? "chevron-up" : "chevron-down"
-                      }
-                      size={18}
-                      color={COLORS.textMuted}
-                    />
+                    <Text
+                      className="text-text text-sm flex-1"
+                      style={{ fontFamily: "Nunito-Regular" }}
+                    >
+                      {item}
+                    </Text>
                   </View>
-                  {expandedSection === i && (
-                    <View className="px-4 pb-4 border-t border-border">
-                      {Array.from({ length: section.lessons }).map((_, j) => (
-                        <View
-                          key={j}
-                          className="flex-row items-center gap-3 py-2"
-                        >
-                          <Ionicons
-                            name="play-circle-outline"
-                            size={18}
-                            color={COLORS.secondary}
-                          />
+                ))}
+              </View>
+            </View>
+
+            {/* Curriculum */}
+            <View className="mt-5">
+              <Text
+                className="text-text text-base mb-3"
+                style={{ fontFamily: "Nunito-Bold" }}
+              >
+                Curriculum
+              </Text>
+              <View className="gap-2">
+                {CURRICULUM.map((section, i) => (
+                  <TouchableOpacity
+                    key={i}
+                    onPress={() =>
+                      setExpandedSection(expandedSection === i ? null : i)
+                    }
+                    activeOpacity={0.8}
+                    className="bg-card rounded-2xl overflow-hidden"
+                  >
+                    <View className="flex-row items-center justify-between p-4">
+                      <View className="flex-row items-center gap-3 flex-1">
+                        <View className="w-8 h-8 bg-primary/10 rounded-full items-center justify-center">
                           <Text
-                            className="text-textMuted text-sm flex-1"
-                            style={{ fontFamily: "Nunito-Regular" }}
+                            className="text-primary text-xs"
+                            style={{ fontFamily: "Nunito-Bold" }}
                           >
-                            Lesson {j + 1}: {section.title} Part {j + 1}
-                          </Text>
-                          <Text
-                            className="text-textMuted text-xs"
-                            style={{ fontFamily: "Nunito-Regular" }}
-                          >
-                            {Math.floor(Math.random() * 15) + 5}m
+                            {i + 1}
                           </Text>
                         </View>
-                      ))}
+                        <View className="flex-1">
+                          <Text
+                            className="text-text text-sm"
+                            style={{ fontFamily: "Nunito-SemiBold" }}
+                            numberOfLines={1}
+                          >
+                            {section.title}
+                          </Text>
+                          <Text
+                            className="text-textMuted text-xs mt-0.5"
+                            style={{ fontFamily: "Nunito-Regular" }}
+                          >
+                            {section.lessons} lessons • {section.duration}
+                          </Text>
+                        </View>
+                      </View>
+                      <Ionicons
+                        name={
+                          expandedSection === i ? "chevron-up" : "chevron-down"
+                        }
+                        size={18}
+                        color={COLORS.textMuted}
+                      />
                     </View>
-                  )}
-                </TouchableOpacity>
-              ))}
+                    {expandedSection === i && (
+                      <View className="px-4 pb-4 border-t border-border">
+                        {Array.from({ length: section.lessons }).map((_, j) => (
+                          <View
+                            key={j}
+                            className="flex-row items-center gap-3 py-2"
+                          >
+                            <Ionicons
+                              name="play-circle-outline"
+                              size={18}
+                              color={COLORS.secondary}
+                            />
+                            <Text
+                              className="text-textMuted text-sm flex-1"
+                              style={{ fontFamily: "Nunito-Regular" }}
+                            >
+                              Lesson {j + 1}: {section.title} Part {j + 1}
+                            </Text>
+                            <Text
+                              className="text-textMuted text-xs"
+                              style={{ fontFamily: "Nunito-Regular" }}
+                            >
+                              {Math.floor(Math.random() * 15) + 5}m
+                            </Text>
+                          </View>
+                        ))}
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
+
+            <View className="h-36" />
           </View>
+        </ScrollView>
 
-          <View className="h-36" />
+        {/* Bottom CTA */}
+        <View
+          className="absolute bottom-0 left-0 right-0 bg-card border-t border-border px-5 pt-3"
+          style={{ paddingBottom: insets.bottom + 8 }}
+        >
+          <Animated.View style={animatedStyle}>
+            <TouchableOpacity
+              onPress={
+                isEnrolled ? () => router.push("/(tabs)/webview") : handleEnroll
+              }
+              className={`rounded-2xl h-14 items-center justify-center ${isEnrolled ? "bg-success" : "bg-primary"}`}
+              style={{
+                shadowColor: isEnrolled ? COLORS.success : COLORS.primary,
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 6,
+              }}
+              activeOpacity={0.85}
+            >
+              <View className="flex-row items-center gap-2">
+                <Ionicons
+                  name={isEnrolled ? "play-circle" : "add-circle-outline"}
+                  size={20}
+                  color="white"
+                />
+                <Text
+                  className="text-white text-base"
+                  style={{ fontFamily: "Nunito-Bold" }}
+                >
+                  {isEnrolled
+                    ? "Continue Learning"
+                    : `Enroll Now • $${course.price}`}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </Animated.View>
         </View>
-      </ScrollView>
-
-      {/* Bottom CTA */}
-      <View
-        className="absolute bottom-0 left-0 right-0 bg-card border-t border-border px-5 pt-3"
-        style={{ paddingBottom: insets.bottom + 8 }}
-      >
-        <Animated.View style={animatedStyle}>
-          <TouchableOpacity
-            onPress={
-              isEnrolled ? () => router.push("/(tabs)/webview") : handleEnroll
-            }
-            className={`rounded-2xl h-14 items-center justify-center ${
-              isEnrolled ? "bg-success" : "bg-primary"
-            }`}
-            style={{
-              shadowColor: isEnrolled ? COLORS.success : COLORS.primary,
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
-              shadowRadius: 8,
-              elevation: 6,
-            }}
-            activeOpacity={0.85}
-          >
-            <View className="flex-row items-center gap-2">
-              <Ionicons
-                name={isEnrolled ? "play-circle" : "add-circle-outline"}
-                size={20}
-                color="white"
-              />
-              <Text
-                className="text-white text-base"
-                style={{ fontFamily: "Nunito-Bold" }}
-              >
-                {isEnrolled
-                  ? "Continue Learning"
-                  : `Enroll Now • $${course.price}`}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        </Animated.View>
       </View>
-    </View>
+    </>
   );
 }
