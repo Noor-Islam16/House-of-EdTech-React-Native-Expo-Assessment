@@ -15,3 +15,6 @@ export const getInitials = (name: string): string =>
 
 export const sleep = (ms: number): Promise<void> =>
   new Promise((r) => setTimeout(r, ms));
+
+export const isValidAvatar = (uri?: string): boolean =>
+  !!uri && (uri.startsWith("http") || uri.startsWith("file"));

@@ -1,3 +1,4 @@
+import { isValidAvatar } from "@/src/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "@src/constants/colors";
 import { useAuthStore, useCourseStore, usePreferenceStore } from "@src/store";
@@ -10,7 +11,6 @@ import {
   Image,
   Modal,
   ScrollView,
-  Switch,
   Text,
   TextInput,
   TouchableOpacity,
@@ -59,9 +59,8 @@ const SettingRow = ({
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { user, logout, setUser } = useAuthStore();
-  const { bookmarks, enrollments } = useCourseStore();
-  const { theme, setTheme, notificationsEnabled, toggleNotifications } =
-    usePreferenceStore();
+  const { bookmarks, enrollments, completedCourses } = useCourseStore();
+  const { theme } = usePreferenceStore();
 
   const [editVisible, setEditVisible] = useState(false);
   const [editName, setEditName] = useState(user?.name ?? "");
@@ -95,10 +94,8 @@ export default function ProfileScreen() {
     }
     setEditLoading(true);
     try {
-      // update locally — freeapi doesn't have update profile endpoint
-      if (user) {
+      if (user)
         setUser({ ...user, name: editName.trim(), email: editEmail.trim() });
-      }
       setEditVisible(false);
       Alert.alert("Success", "Profile updated successfully.");
     } catch {
@@ -122,110 +119,196 @@ export default function ProfileScreen() {
     ]);
   };
 
-  const isDark = theme === "dark";
+  const avatarSource = isValidAvatar(user?.avatar)
+    ? { uri: user!.avatar }
+    : require("../../assets/images/avatar.png");
 
   return (
     <View className="flex-1 bg-background">
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Header */}
+        {/* ── Header ── */}
         <View
-          className="bg-primary px-5 pb-8 rounded-b-[36px]"
-          style={{ paddingTop: insets.top + 12 }}
+          className="bg-primary overflow-hidden"
+          style={{ paddingTop: insets.top + 16, paddingBottom: 48 }}
         >
-          <Text className="text-white text-2xl font-bold mb-6">Profile</Text>
-          <View className="items-center">
-            <TouchableOpacity
-              onPress={handlePickAvatar}
-              activeOpacity={0.85}
-              className="relative"
-            >
-              <View
-                className="w-24 h-24 rounded-full bg-white/20 items-center justify-center overflow-hidden"
-                style={{ borderWidth: 3, borderColor: "rgba(255,255,255,0.4)" }}
-              >
-                {user?.avatar ? (
-                  <Image
-                    source={{ uri: user.avatar }}
-                    style={{ width: 96, height: 96 }}
-                    resizeMode="cover"
-                  />
-                ) : (
-                  <Text
-                    style={{ fontSize: 36, color: "white", fontWeight: "800" }}
-                  >
-                    {user?.name?.[0]?.toUpperCase() ?? "U"}
-                  </Text>
-                )}
-              </View>
-              <View
-                className="absolute bottom-0 right-0 w-8 h-8 bg-white rounded-full items-center justify-center"
-                style={{ elevation: 4 }}
-              >
-                <Ionicons name="camera" size={15} color={COLORS.primary} />
-              </View>
-            </TouchableOpacity>
-            <Text className="text-white font-bold text-xl mt-3">
-              {user?.name ?? "User"}
-            </Text>
-            <Text className="text-white/70 text-sm mt-0.5">
-              {user?.email ?? ""}
-            </Text>
-          </View>
-        </View>
-
-        {/* Stats */}
-        <View className="flex-row px-5 gap-3 mt-5">
-          {/* Enrolled → webview */}
-          <TouchableOpacity
-            className="flex-1 bg-card rounded-2xl p-4 items-center"
-            style={{
-              elevation: 2,
-              shadowColor: "#000",
-              shadowOpacity: 0.05,
-              shadowRadius: 6,
-              shadowOffset: { width: 0, height: 2 },
-            }}
-            onPress={() => router.push("/(tabs)/webview")}
-            activeOpacity={0.8}
-          >
-            <View className="w-10 h-10 bg-primary/10 rounded-xl items-center justify-center mb-2">
-              <Ionicons name="book-outline" size={20} color={COLORS.primary} />
-            </View>
-            <Text className="text-text font-bold text-xl">
-              {enrollments.length}
-            </Text>
-            <Text className="text-textMuted text-xs mt-0.5">Enrolled</Text>
-          </TouchableOpacity>
-
-          {/* Bookmarks → bookmarks tab */}
-          <TouchableOpacity
-            className="flex-1 bg-card rounded-2xl p-4 items-center"
-            style={{
-              elevation: 2,
-              shadowColor: "#000",
-              shadowOpacity: 0.05,
-              shadowRadius: 6,
-              shadowOffset: { width: 0, height: 2 },
-            }}
-            onPress={() => router.push("/(tabs)/bookmarks")}
-            activeOpacity={0.8}
-          >
-            <View className="w-10 h-10 bg-warning/10 rounded-xl items-center justify-center mb-2">
-              <Ionicons
-                name="bookmark-outline"
-                size={20}
-                color={COLORS.warning}
-              />
-            </View>
-            <Text className="text-text font-bold text-xl">
-              {bookmarks.length}
-            </Text>
-            <Text className="text-textMuted text-xs mt-0.5">Bookmarks</Text>
-          </TouchableOpacity>
-
-          {/* Completed → static */}
+          {/* Decorative circles */}
           <View
-            className="flex-1 bg-card rounded-2xl p-4 items-center"
+            className="absolute bg-white/10 rounded-full"
+            style={{ width: 200, height: 200, top: -60, right: -50 }}
+          />
+          <View
+            className="absolute bg-white/5 rounded-full"
+            style={{ width: 130, height: 130, top: 40, right: 60 }}
+          />
+          <View
+            className="absolute bg-white/10 rounded-full"
+            style={{ width: 80, height: 80, bottom: -20, left: -20 }}
+          />
+
+          <View className="px-6">
+            <Text
+              className="text-white text-2xl tracking-widest uppercase mb-5"
+              style={{ fontFamily: "Nunito-Bold" }}
+            >
+              My Profile
+            </Text>
+
+            {/* Avatar + name */}
+            <View className="items-center">
+              <TouchableOpacity
+                onPress={handlePickAvatar}
+                activeOpacity={0.85}
+                className="relative"
+              >
+                <View
+                  className="w-24 h-24 rounded-3xl overflow-hidden bg-white/20"
+                  style={{
+                    borderWidth: 3,
+                    borderColor: "rgba(255,255,255,0.4)",
+                  }}
+                >
+                  <Image
+                    source={avatarSource}
+                    style={{ width: "100%", height: "100%" }}
+                    resizeMode="contain"
+                  />
+                </View>
+                <View
+                  className="absolute bottom-0 right-0 w-8 h-8 bg-white rounded-full items-center justify-center"
+                  style={{ elevation: 4 }}
+                >
+                  <Ionicons name="camera" size={15} color={COLORS.primary} />
+                </View>
+              </TouchableOpacity>
+
+              <Text
+                className="text-white text-2xl mt-3"
+                style={{ fontFamily: "Nunito-Bold" }}
+              >
+                {user?.name ?? "User"}
+              </Text>
+              <Text
+                className="text-white/60 text-sm mt-0.5"
+                style={{ fontFamily: "Nunito-Regular" }}
+              >
+                {user?.email ?? ""}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* ── Sheet overlay ── */}
+        <View
+          className="bg-background"
+          style={{
+            borderTopLeftRadius: 32,
+            borderTopRightRadius: 32,
+            marginTop: -24,
+          }}
+        >
+          {/* Stats */}
+          <View className="flex-row px-5 gap-3 mt-6">
+            <TouchableOpacity
+              className="flex-1 bg-card rounded-2xl p-4 items-center"
+              style={{
+                elevation: 2,
+                shadowColor: "#000",
+                shadowOpacity: 0.05,
+                shadowRadius: 6,
+                shadowOffset: { width: 0, height: 2 },
+              }}
+              onPress={() => router.push("/(tabs)/webview")}
+              activeOpacity={0.8}
+            >
+              <View className="w-10 h-10 bg-primary/10 rounded-xl items-center justify-center mb-2">
+                <Ionicons
+                  name="book-outline"
+                  size={20}
+                  color={COLORS.primary}
+                />
+              </View>
+              <Text
+                className="text-text text-xl"
+                style={{ fontFamily: "Nunito-Bold" }}
+              >
+                {enrollments.length}
+              </Text>
+              <Text
+                className="text-textMuted text-xs mt-0.5"
+                style={{ fontFamily: "Nunito-Regular" }}
+              >
+                Enrolled
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="flex-1 bg-card rounded-2xl p-4 items-center"
+              style={{
+                elevation: 2,
+                shadowColor: "#000",
+                shadowOpacity: 0.05,
+                shadowRadius: 6,
+                shadowOffset: { width: 0, height: 2 },
+              }}
+              onPress={() => router.push("/(tabs)/bookmarks")}
+              activeOpacity={0.8}
+            >
+              <View className="w-10 h-10 bg-warning/10 rounded-xl items-center justify-center mb-2">
+                <Ionicons
+                  name="bookmark-outline"
+                  size={20}
+                  color={COLORS.warning}
+                />
+              </View>
+              <Text
+                className="text-text text-xl"
+                style={{ fontFamily: "Nunito-Bold" }}
+              >
+                {bookmarks.length}
+              </Text>
+              <Text
+                className="text-textMuted text-xs mt-0.5"
+                style={{ fontFamily: "Nunito-Regular" }}
+              >
+                Bookmarks
+              </Text>
+            </TouchableOpacity>
+
+            <View
+              className="flex-1 bg-card rounded-2xl p-4 items-center"
+              style={{
+                elevation: 2,
+                shadowColor: "#000",
+                shadowOpacity: 0.05,
+                shadowRadius: 6,
+                shadowOffset: { width: 0, height: 2 },
+              }}
+            >
+              <View className="w-10 h-10 bg-success/10 rounded-xl items-center justify-center mb-2">
+                <Ionicons
+                  name="trophy-outline"
+                  size={20}
+                  color={COLORS.success}
+                />
+              </View>
+              <Text
+                className="text-text text-xl"
+                style={{ fontFamily: "Nunito-Bold" }}
+              >
+                {completedCourses.length}
+              </Text>
+              <Text
+                className="text-textMuted text-xs mt-0.5"
+                style={{ fontFamily: "Nunito-Regular" }}
+              >
+                Completed
+              </Text>
+            </View>
+          </View>
+
+          {/* Account */}
+          <View
+            className="mx-5 mt-4 bg-card rounded-2xl overflow-hidden"
             style={{
               elevation: 2,
               shadowColor: "#000",
@@ -234,148 +317,97 @@ export default function ProfileScreen() {
               shadowOffset: { width: 0, height: 2 },
             }}
           >
-            <View className="w-10 h-10 bg-success/10 rounded-xl items-center justify-center mb-2">
-              <Ionicons
-                name="trophy-outline"
-                size={20}
-                color={COLORS.success}
-              />
-            </View>
-            <Text className="text-text font-bold text-xl">0</Text>
-            <Text className="text-textMuted text-xs mt-0.5">Completed</Text>
+            <Text
+              className="text-textMuted text-xs uppercase tracking-widest px-4 pt-4 pb-2"
+              style={{ fontFamily: "Nunito-Bold" }}
+            >
+              Account
+            </Text>
+            <SettingRow
+              icon="person-outline"
+              iconBg="#EFF6FF"
+              iconColor={COLORS.primary}
+              label="Edit Profile"
+              onPress={() => {
+                setEditName(user?.name ?? "");
+                setEditEmail(user?.email ?? "");
+                setEditVisible(true);
+              }}
+            />
+            <View className="h-px bg-border mx-4" />
+            <SettingRow
+              icon="shield-checkmark-outline"
+              iconBg="#DCFCE7"
+              iconColor={COLORS.success}
+              label="Privacy & Security"
+              onPress={() =>
+                Alert.alert("Coming Soon", "Privacy settings coming soon.")
+              }
+            />
+            <View className="h-px bg-border mx-4" />
+            <SettingRow
+              icon="help-circle-outline"
+              iconBg="#F0F9FF"
+              iconColor={COLORS.secondary}
+              label="Help & Support"
+              onPress={() => Alert.alert("Coming Soon", "Support coming soon.")}
+            />
           </View>
-        </View>
 
-        {/* Preferences */}
-        <View
-          className="mx-5 mt-5 bg-card rounded-2xl overflow-hidden"
-          style={{
-            elevation: 2,
-            shadowColor: "#000",
-            shadowOpacity: 0.05,
-            shadowRadius: 6,
-            shadowOffset: { width: 0, height: 2 },
-          }}
-        >
-          <Text className="text-textMuted text-xs font-bold uppercase tracking-widest px-4 pt-4 pb-2">
-            Preferences
-          </Text>
-          <SettingRow
-            icon="moon-outline"
-            iconBg="#EDE9FE"
-            iconColor="#7C3AED"
-            label="Dark Mode"
-            showArrow={false}
-            right={
-              <Switch
-                value={isDark}
-                onValueChange={(v) => setTheme(v ? "dark" : "light")}
-                trackColor={{ false: COLORS.border, true: COLORS.primary }}
-                thumbColor="white"
-              />
-            }
-          />
-          <View className="h-px bg-border mx-4" />
-          <SettingRow
-            icon="notifications-outline"
-            iconBg="#FEF3C7"
-            iconColor="#D97706"
-            label="Notifications"
-            showArrow={false}
-            right={
-              <Switch
-                value={notificationsEnabled}
-                onValueChange={toggleNotifications}
-                trackColor={{ false: COLORS.border, true: COLORS.primary }}
-                thumbColor="white"
-              />
-            }
-          />
-        </View>
-
-        {/* Account */}
-        <View
-          className="mx-5 mt-4 bg-card rounded-2xl overflow-hidden"
-          style={{
-            elevation: 2,
-            shadowColor: "#000",
-            shadowOpacity: 0.05,
-            shadowRadius: 6,
-            shadowOffset: { width: 0, height: 2 },
-          }}
-        >
-          <Text className="text-textMuted text-xs font-bold uppercase tracking-widest px-4 pt-4 pb-2">
-            Account
-          </Text>
-          <SettingRow
-            icon="person-outline"
-            iconBg="#EFF6FF"
-            iconColor={COLORS.primary}
-            label="Edit Profile"
-            onPress={() => {
-              setEditName(user?.name ?? "");
-              setEditEmail(user?.email ?? "");
-              setEditVisible(true);
+          {/* App info */}
+          <View
+            className="mx-5 mt-4 bg-card rounded-2xl overflow-hidden"
+            style={{
+              elevation: 2,
+              shadowColor: "#000",
+              shadowOpacity: 0.05,
+              shadowRadius: 6,
+              shadowOffset: { width: 0, height: 2 },
             }}
-          />
-          <View className="h-px bg-border mx-4" />
-          <SettingRow
-            icon="shield-checkmark-outline"
-            iconBg="#DCFCE7"
-            iconColor={COLORS.success}
-            label="Privacy & Security"
-            onPress={() =>
-              Alert.alert("Coming Soon", "Privacy settings coming soon.")
-            }
-          />
-          <View className="h-px bg-border mx-4" />
-          <SettingRow
-            icon="help-circle-outline"
-            iconBg="#F0F9FF"
-            iconColor={COLORS.secondary}
-            label="Help & Support"
-            onPress={() => Alert.alert("Coming Soon", "Support coming soon.")}
-          />
-        </View>
-
-        {/* App info */}
-        <View
-          className="mx-5 mt-4 bg-card rounded-2xl overflow-hidden"
-          style={{
-            elevation: 2,
-            shadowColor: "#000",
-            shadowOpacity: 0.05,
-            shadowRadius: 6,
-            shadowOffset: { width: 0, height: 2 },
-          }}
-        >
-          <Text className="text-textMuted text-xs font-bold uppercase tracking-widest px-4 pt-4 pb-2">
-            App
-          </Text>
-          <SettingRow
-            icon="information-circle-outline"
-            iconBg="#F8FAFC"
-            iconColor={COLORS.textMuted}
-            label="App Version"
-            showArrow={false}
-            right={<Text className="text-textMuted text-sm">v1.0.0</Text>}
-          />
-        </View>
-
-        {/* Logout */}
-        <View className="mx-5 mt-4 mb-8">
-          <TouchableOpacity
-            onPress={handleLogout}
-            activeOpacity={0.85}
-            className="bg-red-50 border border-red-100 rounded-2xl flex-row items-center justify-center py-4 gap-2"
           >
-            <Ionicons name="log-out-outline" size={20} color={COLORS.error} />
-            <Text className="text-error font-bold text-sm">Logout</Text>
-          </TouchableOpacity>
+            <Text
+              className="text-textMuted text-xs uppercase tracking-widest px-4 pt-4 pb-2"
+              style={{ fontFamily: "Nunito-Bold" }}
+            >
+              App
+            </Text>
+            <SettingRow
+              icon="information-circle-outline"
+              iconBg="#F8FAFC"
+              iconColor={COLORS.textMuted}
+              label="App Version"
+              showArrow={false}
+              right={
+                <Text
+                  className="text-textMuted text-sm"
+                  style={{ fontFamily: "Nunito-Regular" }}
+                >
+                  v1.0.0
+                </Text>
+              }
+            />
+          </View>
+
+          {/* Logout */}
+          <View className="mx-5 mt-4 mb-8">
+            <TouchableOpacity
+              onPress={handleLogout}
+              activeOpacity={0.85}
+              className="bg-red-50 border border-red-100 rounded-2xl flex-row items-center justify-center py-4 gap-2"
+            >
+              <Ionicons name="log-out-outline" size={20} color={COLORS.error} />
+              <Text
+                className="text-error text-sm"
+                style={{ fontFamily: "Nunito-Bold" }}
+              >
+                Logout
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
 
-      {/* Edit Profile Modal */}
+      {/* Edit Modal */}
       <Modal
         visible={editVisible}
         animationType="slide"
@@ -387,17 +419,19 @@ export default function ProfileScreen() {
           style={{ backgroundColor: "rgba(0,0,0,0.4)" }}
         >
           <View className="bg-card rounded-t-[32px] px-5 pt-5 pb-8">
-            {/* Handle */}
             <View className="w-10 h-1 bg-border rounded-full self-center mb-5" />
-
             <View className="flex-row items-center justify-between mb-5">
-              <Text className="text-text font-bold text-lg">Edit Profile</Text>
+              <Text
+                className="text-text text-lg"
+                style={{ fontFamily: "Nunito-Bold" }}
+              >
+                Edit Profile
+              </Text>
               <TouchableOpacity onPress={() => setEditVisible(false)}>
                 <Ionicons name="close" size={22} color={COLORS.textMuted} />
               </TouchableOpacity>
             </View>
 
-            {/* Name */}
             <Text className="text-text font-semibold text-sm mb-2">
               Display Name
             </Text>
@@ -412,6 +446,7 @@ export default function ProfileScreen() {
               />
               <TextInput
                 className="flex-1 ml-3 text-text text-sm"
+                style={{ fontFamily: "Nunito-Regular" }}
                 placeholder="Enter your name"
                 placeholderTextColor={COLORS.textMuted}
                 value={editName}
@@ -419,7 +454,6 @@ export default function ProfileScreen() {
               />
             </View>
 
-            {/* Email */}
             <Text className="text-text font-semibold text-sm mb-2">Email</Text>
             <View
               className="flex-row items-center bg-background border border-border rounded-xl px-4 mb-6"
@@ -432,6 +466,7 @@ export default function ProfileScreen() {
               />
               <TextInput
                 className="flex-1 ml-3 text-text text-sm"
+                style={{ fontFamily: "Nunito-Regular" }}
                 placeholder="Enter your email"
                 placeholderTextColor={COLORS.textMuted}
                 keyboardType="email-address"
@@ -441,13 +476,12 @@ export default function ProfileScreen() {
               />
             </View>
 
-            {/* Save */}
             <TouchableOpacity
               onPress={handleSaveProfile}
               disabled={editLoading}
-              className="bg-primary rounded-xl items-center justify-center"
+              className="bg-primary rounded-2xl items-center justify-center"
               style={{
-                height: 52,
+                height: 54,
                 elevation: 4,
                 shadowColor: COLORS.primary,
                 shadowOpacity: 0.3,
@@ -459,7 +493,10 @@ export default function ProfileScreen() {
               {editLoading ? (
                 <ActivityIndicator color="white" />
               ) : (
-                <Text className="text-white font-bold text-base">
+                <Text
+                  className="text-white text-base"
+                  style={{ fontFamily: "Nunito-Bold" }}
+                >
                   Save Changes
                 </Text>
               )}

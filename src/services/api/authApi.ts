@@ -26,7 +26,7 @@ export const authApi = {
         id: d.user._id,
         name: d.user.username,
         email: d.user.email,
-        avatar: d.user.avatar?.url,
+        avatar: undefined,
       },
       tokens: {
         accessToken: d.accessToken,
@@ -43,7 +43,7 @@ export const authApi = {
         id: d.user?._id ?? d._id,
         name: d.user?.username ?? d.username,
         email: d.user?.email ?? d.email,
-        avatar: d.user?.avatar?.url ?? d.avatar?.url,
+        avatar: undefined,
       },
       tokens: {
         accessToken: d.accessToken ?? "",

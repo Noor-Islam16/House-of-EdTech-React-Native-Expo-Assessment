@@ -18,6 +18,13 @@ module.exports = {
         card: "#FFFFFF",
         text: "#0F172A",
       },
+      fontFamily: {
+        sans: ["Nunito-Regular"],
+        medium: ["Nunito-Medium"],
+        semibold: ["Nunito-SemiBold"],
+        bold: ["Nunito-Bold"],
+        extrabold: ["Nunito-ExtraBold"],
+      },
     },
   },
   plugins: [],

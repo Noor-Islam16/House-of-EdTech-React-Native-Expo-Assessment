@@ -33,12 +33,13 @@ function CourseListCard({ item, onBookmark, isBookmarked }: Props) {
       <View className="flex-1 p-3 justify-between">
         <View>
           <Text
-            className="text-text font-bold text-sm mb-0.5"
+            className="text-text text-sm mb-1"
+            style={{ fontFamily: "Nunito-Bold" }}
             numberOfLines={2}
           >
             {item.title}
           </Text>
-          <View className="flex-row items-center gap-1 mb-1">
+          <View className="flex-row items-center gap-1 mb-2">
             <Image
               source={{ uri: item.instructor.avatar }}
               className="w-4 h-4 rounded-full"
@@ -56,9 +57,19 @@ function CourseListCard({ item, onBookmark, isBookmarked }: Props) {
         <View className="flex-row items-center justify-between mt-2">
           <View className="flex-row items-center gap-1">
             <Ionicons name="star" size={12} color={COLORS.warning} />
-            <Text className="text-xs text-textMuted">{item.rating}</Text>
+            <Text
+              className="text-xs text-textMuted"
+              style={{ fontFamily: "Nunito-Regular" }}
+            >
+              {item.rating}
+            </Text>
           </View>
-          <Text className="text-primary font-bold text-sm">${item.price}</Text>
+          <Text
+            className="text-primary text-sm"
+            style={{ fontFamily: "Nunito-Bold" }}
+          >
+            ${item.price}
+          </Text>
           <TouchableOpacity onPress={() => onBookmark(item.id)} className="p-1">
             <Ionicons
               name={isBookmarked ? "bookmark" : "bookmark-outline"}

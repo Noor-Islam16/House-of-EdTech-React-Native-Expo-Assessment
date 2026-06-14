@@ -1,9 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "@src/constants/colors";
+import { courseApi } from "@src/services/api/courseApi";
 import { useAuthStore, useCourseStore } from "@src/store";
+import { useQuery } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Image,
   ScrollView,
@@ -46,12 +49,22 @@ export default function CourseDetailScreen() {
     useCourseStore();
   const user = useAuthStore((s) => s.user);
 
+  const { isLoading: isFetching } = useQuery({
+    queryKey: ["courses"],
+    queryFn: async () => {
+      const data = await courseApi.getCourses();
+      useCourseStore.getState().setCourses(data);
+      return data;
+    },
+    enabled: courses.length === 0,
+    staleTime: 1000 * 60 * 5,
+  });
+
   const course = useMemo(() => courses.find((c) => c.id === id), [courses, id]);
 
   const isBookmarked = bookmarks.includes(id ?? "");
   const isEnrolled = enrollments.includes(id ?? "");
 
-  // Enroll button scale animation
   const scale = useSharedValue(1);
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -64,8 +77,8 @@ export default function CourseDetailScreen() {
     });
     enroll(id);
     Alert.alert(
-      "🎉 Enrolled!",
-      `You've successfully enrolled in ${course?.title}`,
+      "Enrolled!",
+      `You have successfully enrolled in ${course?.title}`,
       [
         {
           text: "Start Learning",
@@ -81,18 +94,37 @@ export default function CourseDetailScreen() {
     });
   };
 
-  if (!course) {
+  if (isFetching && !course) {
     return (
       <View className="flex-1 bg-background items-center justify-center">
+        <ActivityIndicator size="large" color={COLORS.primary} />
+        <Text
+          className="text-textMuted text-sm mt-3"
+          style={{ fontFamily: "Nunito-Regular" }}
+        >
+          Loading course...
+        </Text>
+      </View>
+    );
+  }
+
+  if (!course) {
+    return (
+      <View className="flex-1 bg-background items-center justify-center px-8">
         <Ionicons name="alert-circle-outline" size={48} color={COLORS.error} />
-        <Text className="text-text font-bold text-lg mt-3">
+        <Text
+          className="text-text text-lg mt-3 text-center"
+          style={{ fontFamily: "Nunito-Bold" }}
+        >
           Course not found
         </Text>
         <TouchableOpacity
           onPress={() => router.back()}
           className="mt-4 bg-primary px-6 py-3 rounded-xl"
         >
-          <Text className="text-white font-bold">Go Back</Text>
+          <Text className="text-white" style={{ fontFamily: "Nunito-Bold" }}>
+            Go Back
+          </Text>
         </TouchableOpacity>
       </View>
     );
@@ -110,7 +142,6 @@ export default function CourseDetailScreen() {
             style={{ width: "100%", height: 260 }}
             resizeMode="cover"
           />
-          {/* Overlay */}
           <View
             style={{
               position: "absolute",
@@ -121,7 +152,6 @@ export default function CourseDetailScreen() {
               backgroundColor: "rgba(0,0,0,0.35)",
             }}
           />
-          {/* Top bar */}
           <View
             style={{ paddingTop: insets.top + 8 }}
             className="absolute top-0 left-0 right-0 flex-row items-center justify-between px-5"
@@ -151,11 +181,12 @@ export default function CourseDetailScreen() {
               </TouchableOpacity>
             </View>
           </View>
-
-          {/* Category badge on image */}
           <View className="absolute bottom-4 left-5">
             <View className="bg-primary px-3 py-1 rounded-full">
-              <Text className="text-white text-xs font-bold">
+              <Text
+                className="text-white text-xs"
+                style={{ fontFamily: "Nunito-Bold" }}
+              >
                 {course.category}
               </Text>
             </View>
@@ -165,62 +196,113 @@ export default function CourseDetailScreen() {
         {/* Content */}
         <View className="px-5 pt-5">
           {/* Title */}
-          <Text className="text-text text-xl font-bold leading-7">
+          <Text
+            className="text-text text-xl leading-7"
+            style={{ fontFamily: "Nunito-Bold" }}
+          >
             {course.title}
           </Text>
 
-          {/* Instructor row */}
+          {/* Instructor */}
           <View className="flex-row items-center mt-3 gap-3">
             <Image
               source={{ uri: course.instructor.avatar }}
               className="w-10 h-10 rounded-full"
             />
             <View>
-              <Text className="text-text font-semibold text-sm">
+              <Text
+                className="text-text text-sm"
+                style={{ fontFamily: "Nunito-SemiBold" }}
+              >
                 {course.instructor.firstName} {course.instructor.lastName}
               </Text>
-              <Text className="text-textMuted text-xs">Course Instructor</Text>
+              <Text
+                className="text-textMuted text-xs"
+                style={{ fontFamily: "Nunito-Regular" }}
+              >
+                Course Instructor
+              </Text>
             </View>
           </View>
 
-          {/* Stats row */}
+          {/* Stats */}
           <View className="flex-row items-center justify-between bg-card rounded-2xl p-4 mt-4">
             <View className="items-center flex-1">
               <View className="flex-row items-center gap-1">
                 <Ionicons name="star" size={16} color={COLORS.warning} />
-                <Text className="text-text font-bold text-base">
+                <Text
+                  className="text-text text-base"
+                  style={{ fontFamily: "Nunito-Bold" }}
+                >
                   {course.rating}
                 </Text>
               </View>
-              <Text className="text-textMuted text-xs mt-0.5">Rating</Text>
+              <Text
+                className="text-textMuted text-xs mt-0.5"
+                style={{ fontFamily: "Nunito-Regular" }}
+              >
+                Rating
+              </Text>
             </View>
             <View className="w-px h-8 bg-border" />
             <View className="items-center flex-1">
-              <Text className="text-text font-bold text-base">
+              <Text
+                className="text-text text-base"
+                style={{ fontFamily: "Nunito-Bold" }}
+              >
                 {totalLessons}
               </Text>
-              <Text className="text-textMuted text-xs mt-0.5">Lessons</Text>
+              <Text
+                className="text-textMuted text-xs mt-0.5"
+                style={{ fontFamily: "Nunito-Regular" }}
+              >
+                Lessons
+              </Text>
             </View>
             <View className="w-px h-8 bg-border" />
             <View className="items-center flex-1">
-              <Text className="text-text font-bold text-base">6</Text>
-              <Text className="text-textMuted text-xs mt-0.5">Weeks</Text>
+              <Text
+                className="text-text text-base"
+                style={{ fontFamily: "Nunito-Bold" }}
+              >
+                6
+              </Text>
+              <Text
+                className="text-textMuted text-xs mt-0.5"
+                style={{ fontFamily: "Nunito-Regular" }}
+              >
+                Weeks
+              </Text>
             </View>
             <View className="w-px h-8 bg-border" />
             <View className="items-center flex-1">
-              <Text className="text-success font-bold text-base">
+              <Text
+                className="text-success text-base"
+                style={{ fontFamily: "Nunito-Bold" }}
+              >
                 ${course.price}
               </Text>
-              <Text className="text-textMuted text-xs mt-0.5">Price</Text>
+              <Text
+                className="text-textMuted text-xs mt-0.5"
+                style={{ fontFamily: "Nunito-Regular" }}
+              >
+                Price
+              </Text>
             </View>
           </View>
 
           {/* Description */}
           <View className="mt-5">
-            <Text className="text-text font-bold text-base mb-2">
+            <Text
+              className="text-text text-base mb-2"
+              style={{ fontFamily: "Nunito-Bold" }}
+            >
               About This Course
             </Text>
-            <Text className="text-textMuted text-sm leading-6">
+            <Text
+              className="text-textMuted text-sm leading-6"
+              style={{ fontFamily: "Nunito-Regular" }}
+            >
               {course.description} Learn from industry experts and build
               portfolio-worthy projects. This course is designed for developers
               who want to take their skills to the next level with hands-on
@@ -230,7 +312,10 @@ export default function CourseDetailScreen() {
 
           {/* What you'll learn */}
           <View className="mt-5">
-            <Text className="text-text font-bold text-base mb-3">
+            <Text
+              className="text-text text-base mb-3"
+              style={{ fontFamily: "Nunito-Bold" }}
+            >
               What You'll Learn
             </Text>
             <View className="bg-card rounded-2xl p-4 gap-3">
@@ -243,7 +328,12 @@ export default function CourseDetailScreen() {
                       color={COLORS.success}
                     />
                   </View>
-                  <Text className="text-text text-sm flex-1">{item}</Text>
+                  <Text
+                    className="text-text text-sm flex-1"
+                    style={{ fontFamily: "Nunito-Regular" }}
+                  >
+                    {item}
+                  </Text>
                 </View>
               ))}
             </View>
@@ -251,7 +341,10 @@ export default function CourseDetailScreen() {
 
           {/* Curriculum */}
           <View className="mt-5">
-            <Text className="text-text font-bold text-base mb-3">
+            <Text
+              className="text-text text-base mb-3"
+              style={{ fontFamily: "Nunito-Bold" }}
+            >
               Curriculum
             </Text>
             <View className="gap-2">
@@ -261,23 +354,31 @@ export default function CourseDetailScreen() {
                   onPress={() =>
                     setExpandedSection(expandedSection === i ? null : i)
                   }
+                  activeOpacity={0.8}
                   className="bg-card rounded-2xl overflow-hidden"
                 >
                   <View className="flex-row items-center justify-between p-4">
                     <View className="flex-row items-center gap-3 flex-1">
                       <View className="w-8 h-8 bg-primary/10 rounded-full items-center justify-center">
-                        <Text className="text-primary font-bold text-xs">
+                        <Text
+                          className="text-primary text-xs"
+                          style={{ fontFamily: "Nunito-Bold" }}
+                        >
                           {i + 1}
                         </Text>
                       </View>
                       <View className="flex-1">
                         <Text
-                          className="text-text font-semibold text-sm"
+                          className="text-text text-sm"
+                          style={{ fontFamily: "Nunito-SemiBold" }}
                           numberOfLines={1}
                         >
                           {section.title}
                         </Text>
-                        <Text className="text-textMuted text-xs mt-0.5">
+                        <Text
+                          className="text-textMuted text-xs mt-0.5"
+                          style={{ fontFamily: "Nunito-Regular" }}
+                        >
                           {section.lessons} lessons • {section.duration}
                         </Text>
                       </View>
@@ -291,7 +392,7 @@ export default function CourseDetailScreen() {
                     />
                   </View>
                   {expandedSection === i && (
-                    <View className="px-4 pb-4 pt-0 border-t border-border">
+                    <View className="px-4 pb-4 border-t border-border">
                       {Array.from({ length: section.lessons }).map((_, j) => (
                         <View
                           key={j}
@@ -302,10 +403,16 @@ export default function CourseDetailScreen() {
                             size={18}
                             color={COLORS.secondary}
                           />
-                          <Text className="text-textMuted text-sm flex-1">
+                          <Text
+                            className="text-textMuted text-sm flex-1"
+                            style={{ fontFamily: "Nunito-Regular" }}
+                          >
                             Lesson {j + 1}: {section.title} Part {j + 1}
                           </Text>
-                          <Text className="text-textMuted text-xs">
+                          <Text
+                            className="text-textMuted text-xs"
+                            style={{ fontFamily: "Nunito-Regular" }}
+                          >
                             {Math.floor(Math.random() * 15) + 5}m
                           </Text>
                         </View>
@@ -317,7 +424,7 @@ export default function CourseDetailScreen() {
             </View>
           </View>
 
-          <View className="h-32" />
+          <View className="h-36" />
         </View>
       </ScrollView>
 
@@ -349,7 +456,10 @@ export default function CourseDetailScreen() {
                 size={20}
                 color="white"
               />
-              <Text className="text-white font-bold text-base">
+              <Text
+                className="text-white text-base"
+                style={{ fontFamily: "Nunito-Bold" }}
+              >
                 {isEnrolled
                   ? "Continue Learning"
                   : `Enroll Now • $${course.price}`}

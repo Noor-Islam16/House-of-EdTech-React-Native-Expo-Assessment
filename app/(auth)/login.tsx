@@ -68,7 +68,11 @@ export default function LoginScreen() {
         {/* ── Header ── */}
         <View
           className="bg-primary overflow-hidden"
-          style={{ paddingTop: insets.top + 24, paddingBottom: 48 }}
+          style={{
+            paddingTop: insets.top + 16,
+            paddingBottom: 48,
+            minHeight: 260,
+          }}
         >
           {/* Decorative circles */}
           <View
@@ -84,20 +88,26 @@ export default function LoginScreen() {
             style={{ width: 80, height: 80, bottom: -20, left: -20 }}
           />
 
-          <View className="px-6">
-            {/* Logo pill */}
-            <View className="bg-white/20 self-start rounded-2xl p-3 mb-6">
-              <Image
-                source={require("../../assets/images/logo.png")}
-                className="w-8 h-8"
-                resizeMode="contain"
-              />
-            </View>
+          <View className="px-6 items-center">
+            {/* Logo — no bg */}
+            <Image
+              source={require("../../assets/images/logo.png")}
+              style={{
+                width: 80,
+                height: undefined,
+                aspectRatio: 1,
+                marginBottom: 10,
+              }}
+              resizeMode="contain"
+            />
 
             <Text className="text-white/60 text-xs font-semibold tracking-widest uppercase mb-1">
               Welcome back
             </Text>
-            <Text className="text-white text-4xl font-bold leading-tight">
+            <Text
+              className="text-white text-4xl leading-tight text-center"
+              style={{ fontFamily: "Nunito-Bold" }}
+            >
               Sign in to{"\n"}your account
             </Text>
           </View>
@@ -155,6 +165,7 @@ export default function LoginScreen() {
                     </View>
                     <TextInput
                       className="flex-1 text-text text-sm"
+                      style={{ fontFamily: "Nunito-Regular" }}
                       placeholder="you@example.com"
                       placeholderTextColor={COLORS.textMuted}
                       keyboardType="email-address"
@@ -167,7 +178,10 @@ export default function LoginScreen() {
                 )}
               />
               {errors.email && (
-                <Text className="text-red-500 text-xs mt-1.5 ml-1">
+                <Text
+                  className="text-red-500 text-xs mt-1.5 ml-1"
+                  style={{ fontFamily: "Nunito-Regular" }}
+                >
                   {errors.email.message}
                 </Text>
               )}
@@ -197,6 +211,7 @@ export default function LoginScreen() {
                     </View>
                     <TextInput
                       className="flex-1 text-text text-sm"
+                      style={{ fontFamily: "Nunito-Regular" }}
                       placeholder="Min. 6 characters"
                       placeholderTextColor={COLORS.textMuted}
                       secureTextEntry={!showPassword}
@@ -219,7 +234,10 @@ export default function LoginScreen() {
                 )}
               />
               {errors.password && (
-                <Text className="text-red-500 text-xs mt-1.5 ml-1">
+                <Text
+                  className="text-red-500 text-xs mt-1.5 ml-1"
+                  style={{ fontFamily: "Nunito-Regular" }}
+                >
                   {errors.password.message}
                 </Text>
               )}
@@ -252,7 +270,10 @@ export default function LoginScreen() {
               {isSubmitting ? (
                 <ActivityIndicator color="white" />
               ) : (
-                <Text className="text-white font-bold text-base tracking-wide">
+                <Text
+                  className="text-white text-base tracking-wide"
+                  style={{ fontFamily: "Nunito-Bold" }}
+                >
                   Sign In
                 </Text>
               )}
@@ -269,10 +290,18 @@ export default function LoginScreen() {
 
             {/* Register Link */}
             <View className="flex-row justify-center items-center gap-1">
-              <Text className="text-textMuted text-sm">New here?</Text>
+              <Text
+                className="text-textMuted text-sm"
+                style={{ fontFamily: "Nunito-Regular" }}
+              >
+                New here?
+              </Text>
               <Link href="/(auth)/register" asChild>
                 <TouchableOpacity>
-                  <Text className="text-primary font-bold text-sm">
+                  <Text
+                    className="text-primary text-sm"
+                    style={{ fontFamily: "Nunito-Bold" }}
+                  >
                     Create an account
                   </Text>
                 </TouchableOpacity>

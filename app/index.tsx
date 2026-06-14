@@ -1,9 +1,8 @@
-import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "@src/constants/colors";
 import { useAuthStore } from "@src/store";
-import { Redirect } from "expo-router";
+import { router } from "expo-router";
 import { useEffect, useRef } from "react";
-import { Animated, Text, View } from "react-native";
+import { Animated, Image, Text, View } from "react-native";
 
 export default function Index() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -31,7 +30,6 @@ export default function Index() {
         useNativeDriver: true,
       }),
     ]).start(() => {
-      // text fade in
       Animated.timing(textOpacity, {
         toValue: 1,
         duration: 300,
@@ -39,7 +37,7 @@ export default function Index() {
       }).start();
     });
 
-    // loading dots loop
+    // dots loop
     const dotLoop = Animated.loop(
       Animated.sequence([
         Animated.timing(dotOpacity1, {
@@ -75,44 +73,43 @@ export default function Index() {
       ]),
     );
     dotLoop.start();
-    return () => dotLoop.stop();
-  }, []);
 
-  if (!isLoading) {
-    return isAuthenticated ? (
-      <Redirect href="/(tabs)" />
-    ) : (
-      <Redirect href="/(auth)/login" />
-    );
-  }
+    // 3-5s timer — navigate after 4s regardless of auth loading
+    const timer = setTimeout(() => {
+      dotLoop.stop();
+      if (!isLoading) {
+        router.replace(isAuthenticated ? "/(tabs)" : "/(auth)/login");
+      } else {
+        // poll until isLoading done
+        const poll = setInterval(() => {
+          const auth = useAuthStore.getState();
+          if (!auth.isLoading) {
+            clearInterval(poll);
+            router.replace(auth.isAuthenticated ? "/(tabs)" : "/(auth)/login");
+          }
+        }, 100);
+      }
+    }, 4000);
+
+    return () => {
+      dotLoop.stop();
+      clearTimeout(timer);
+    };
+  }, []);
 
   return (
     <View
       className="flex-1 items-center justify-center"
       style={{ backgroundColor: COLORS.primary }}
     >
-      {/* Background circles */}
+      {/* Decorative circles */}
       <View
-        style={{
-          position: "absolute",
-          width: 300,
-          height: 300,
-          borderRadius: 150,
-          backgroundColor: "rgba(255,255,255,0.05)",
-          top: -80,
-          right: -80,
-        }}
+        className="absolute bg-white/10 rounded-full"
+        style={{ width: 300, height: 300, top: -80, right: -80 }}
       />
       <View
-        style={{
-          position: "absolute",
-          width: 200,
-          height: 200,
-          borderRadius: 100,
-          backgroundColor: "rgba(255,255,255,0.05)",
-          bottom: -40,
-          left: -60,
-        }}
+        className="absolute bg-white/5 rounded-full"
+        style={{ width: 200, height: 200, bottom: -40, left: -60 }}
       />
 
       {/* Logo */}
@@ -121,49 +118,30 @@ export default function Index() {
           opacity: logoOpacity,
           transform: [{ scale: logoScale }],
           alignItems: "center",
+          marginBottom: 12,
         }}
       >
-        <View
-          style={{
-            width: 96,
-            height: 96,
-            backgroundColor: "rgba(255,255,255,0.2)",
-            borderRadius: 28,
-            alignItems: "center",
-            justifyContent: "center",
-            marginBottom: 20,
-            borderWidth: 2,
-            borderColor: "rgba(255,255,255,0.3)",
-          }}
-        >
-          <Ionicons name="school" size={48} color="white" />
-        </View>
+        <Image
+          source={require("../assets/images/logo.png")}
+          style={{ width: 200, height: undefined, aspectRatio: 1 }}
+          resizeMode="contain"
+        />
       </Animated.View>
 
-      {/* App name */}
+      {/* Text — right below logo, no gap */}
       <Animated.View style={{ opacity: textOpacity, alignItems: "center" }}>
         <Text
           style={{
             color: "white",
-            fontSize: 36,
-            fontWeight: "800",
+            fontSize: 24,
+            fontFamily: "Nunito-Bold",
             letterSpacing: 1,
-          }}
-        >
-          EduFlex
-        </Text>
-        <Text
-          style={{
-            color: "rgba(255,255,255,0.7)",
-            fontSize: 14,
-            marginTop: 6,
-            letterSpacing: 0.5,
+            textAlign: "center",
           }}
         >
           Learn Anything, Anywhere
         </Text>
       </Animated.View>
-
       {/* Loading dots */}
       <View
         style={{

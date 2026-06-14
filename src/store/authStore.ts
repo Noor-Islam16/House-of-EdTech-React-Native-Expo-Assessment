@@ -35,9 +35,17 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: async () => {
     await SecureStore.deleteItemAsync("accessToken");
     await SecureStore.deleteItemAsync("user");
-    await AsyncStorage.multiRemove(["bookmarks", "enrollments"]);
+    await AsyncStorage.multiRemove([
+      "bookmarks",
+      "enrollments",
+      "completedCourses",
+    ]);
     const { useCourseStore } = await import("./courseStore");
-    useCourseStore.setState({ bookmarks: [], enrollments: [] });
+    useCourseStore.setState({
+      bookmarks: [],
+      enrollments: [],
+      completedCourses: [],
+    });
     set({ user: null, token: null, isAuthenticated: false });
   },
 

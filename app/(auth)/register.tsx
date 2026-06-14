@@ -8,7 +8,7 @@ import React, { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   ActivityIndicator,
-  ScrollView,
+  Image,
   Text,
   TextInput,
   TouchableOpacity,
@@ -128,72 +128,75 @@ export default function RegisterScreen() {
   ];
 
   return (
-    <KeyboardAwareScrollView
-      className="flex-1 bg-background"
-      contentContainerStyle={{ flexGrow: 1 }}
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-      enableOnAndroid
-      extraScrollHeight={20}
-      enableAutomaticScroll
-    >
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1 }}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
+    <View className="flex-1 bg-background">
+      {/* ── Fixed Header ── */}
+      <View
+        className="bg-primary overflow-hidden"
+        style={{ paddingTop: insets.top + 16, paddingBottom: 48 }}
       >
-        {/* ── Header ── */}
         <View
-          className="bg-primary overflow-hidden"
-          style={{ paddingTop: insets.top + 16, paddingBottom: 48 }}
-        >
-          {/* Decorative circles */}
-          <View
-            className="absolute bg-white/10 rounded-full"
-            style={{ width: 180, height: 180, top: -50, right: -40 }}
-          />
-          <View
-            className="absolute bg-white/5 rounded-full"
-            style={{ width: 110, height: 110, top: 50, right: 55 }}
-          />
-          <View
-            className="absolute bg-white/10 rounded-full"
-            style={{ width: 70, height: 70, bottom: -15, left: -15 }}
-          />
+          className="absolute bg-white/10 rounded-full"
+          style={{ width: 180, height: 180, top: -50, right: -40 }}
+        />
+        <View
+          className="absolute bg-white/5 rounded-full"
+          style={{ width: 110, height: 110, top: 50, right: 55 }}
+        />
+        <View
+          className="absolute bg-white/10 rounded-full"
+          style={{ width: 70, height: 70, bottom: -15, left: -15 }}
+        />
 
-          <View className="px-6">
-            {/* Back button */}
-            <TouchableOpacity
-              onPress={() => router.back()}
-              className="w-10 h-10 bg-white/20 rounded-full items-center justify-center mb-6"
-            >
-              <Ionicons name="arrow-back" size={20} color="white" />
-            </TouchableOpacity>
+        <View className="px-6 items-center" style={{ position: "relative" }}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className="w-10 h-10 bg-white/20 rounded-full items-center justify-center"
+            style={{ position: "absolute", top: 0, left: 24 }}
+          >
+            <Ionicons name="arrow-back" size={20} color="white" />
+          </TouchableOpacity>
 
-            {/* Icon pill */}
-            <View className="bg-white/20 self-start rounded-2xl p-3 mb-5">
-              <Ionicons name="school" size={26} color="white" />
-            </View>
-
-            <Text className="text-white/60 text-xs font-semibold tracking-widest uppercase mb-1">
-              Get started
-            </Text>
-            <Text className="text-white text-4xl font-bold leading-tight">
-              Create your{"\n"}account
-            </Text>
-          </View>
+          <Image
+            source={require("../../assets/images/logo.png")}
+            style={{
+              width: 72,
+              height: undefined,
+              aspectRatio: 1,
+              marginBottom: 20,
+            }}
+            resizeMode="contain"
+          />
+          <Text className="text-white/60 text-xs font-semibold tracking-widest uppercase mb-1">
+            Get started
+          </Text>
+          <Text
+            className="text-white text-4xl leading-tight text-center"
+            style={{ fontFamily: "Nunito-Bold" }}
+          >
+            Create your{"\n"}account
+          </Text>
         </View>
+      </View>
 
-        {/* ── Sheet overlay ── */}
-        <View
-          className="bg-background"
-          style={{
-            borderTopLeftRadius: 32,
-            borderTopRightRadius: 32,
-            marginTop: -24,
-          }}
+      {/* ── Scrollable sheet ── */}
+      <View
+        className="flex-1 bg-background"
+        style={{
+          borderTopLeftRadius: 32,
+          borderTopRightRadius: 32,
+          marginTop: -24,
+          overflow: "hidden",
+        }}
+      >
+        <KeyboardAwareScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          enableOnAndroid
+          extraScrollHeight={20}
+          enableAutomaticScroll
         >
-          <View className="px-6 pt-8 pb-10">
+          <View className="px-6 pt-8 pb-16">
             {/* API Error */}
             {apiError && (
               <View className="flex-row items-center gap-3 bg-red-50 border border-red-200 rounded-2xl px-4 py-3 mb-5">
@@ -234,6 +237,7 @@ export default function RegisterScreen() {
                       </View>
                       <TextInput
                         className="flex-1 text-text text-sm"
+                        style={{ fontFamily: "Nunito-Regular" }}
                         placeholder={f.placeholder}
                         placeholderTextColor={COLORS.textMuted}
                         secureTextEntry={f.secure && !f.show}
@@ -259,14 +263,16 @@ export default function RegisterScreen() {
                   )}
                 />
                 {errors[f.name] && (
-                  <Text className="text-red-500 text-xs mt-1.5 ml-1">
+                  <Text
+                    className="text-red-500 text-xs mt-1.5 ml-1"
+                    style={{ fontFamily: "Nunito-Regular" }}
+                  >
                     {errors[f.name]?.message}
                   </Text>
                 )}
               </View>
             ))}
 
-            {/* Submit */}
             <TouchableOpacity
               className="bg-primary rounded-2xl items-center justify-center mt-4"
               style={{
@@ -284,13 +290,15 @@ export default function RegisterScreen() {
               {isSubmitting ? (
                 <ActivityIndicator color="white" />
               ) : (
-                <Text className="text-white font-bold text-base tracking-wide">
+                <Text
+                  className="text-white text-base tracking-wide"
+                  style={{ fontFamily: "Nunito-Bold" }}
+                >
                   Create Account
                 </Text>
               )}
             </TouchableOpacity>
 
-            {/* Divider */}
             <View className="flex-row items-center my-6">
               <View className="flex-1 h-px bg-border" />
               <Text className="text-textMuted text-xs mx-4 font-medium">
@@ -299,22 +307,27 @@ export default function RegisterScreen() {
               <View className="flex-1 h-px bg-border" />
             </View>
 
-            {/* Login link */}
             <View className="flex-row justify-center items-center gap-1">
-              <Text className="text-textMuted text-sm">
+              <Text
+                className="text-textMuted text-sm"
+                style={{ fontFamily: "Nunito-Regular" }}
+              >
                 Already have an account?
               </Text>
               <Link href="/(auth)/login" asChild>
                 <TouchableOpacity>
-                  <Text className="text-primary font-bold text-sm">
+                  <Text
+                    className="text-primary text-sm"
+                    style={{ fontFamily: "Nunito-Bold" }}
+                  >
                     Sign In
                   </Text>
                 </TouchableOpacity>
               </Link>
             </View>
           </View>
-        </View>
-      </ScrollView>
-    </KeyboardAwareScrollView>
+        </KeyboardAwareScrollView>
+      </View>
+    </View>
   );
 }
