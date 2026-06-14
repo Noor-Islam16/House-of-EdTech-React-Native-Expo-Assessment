@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "@src/constants/colors";
 import type { Course } from "@src/types";
 import { router } from "expo-router";
+import { memo } from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 
 interface Props {
@@ -10,7 +11,7 @@ interface Props {
   isBookmarked: boolean;
 }
 
-export default function CourseCard({ item, onBookmark, isBookmarked }: Props) {
+function CourseCard({ item, onBookmark, isBookmarked }: Props) {
   return (
     <TouchableOpacity
       className="bg-card rounded-2xl mr-4 overflow-hidden"
@@ -64,3 +65,5 @@ export default function CourseCard({ item, onBookmark, isBookmarked }: Props) {
     </TouchableOpacity>
   );
 }
+
+export default memo(CourseCard);

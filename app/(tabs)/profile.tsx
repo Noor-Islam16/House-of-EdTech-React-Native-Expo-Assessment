@@ -5,11 +5,14 @@ import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Image,
+  Modal,
   ScrollView,
   Switch,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -60,7 +63,10 @@ export default function ProfileScreen() {
   const { theme, setTheme, notificationsEnabled, toggleNotifications } =
     usePreferenceStore();
 
-  const [avatarLoading, setAvatarLoading] = useState(false);
+  const [editVisible, setEditVisible] = useState(false);
+  const [editName, setEditName] = useState(user?.name ?? "");
+  const [editEmail, setEditEmail] = useState(user?.email ?? "");
+  const [editLoading, setEditLoading] = useState(false);
 
   const handlePickAvatar = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -78,12 +84,27 @@ export default function ProfileScreen() {
       quality: 0.8,
     });
     if (!result.canceled && result.assets[0]) {
-      setAvatarLoading(true);
-      // update local avatar optimistically
+      if (user) setUser({ ...user, avatar: result.assets[0].uri });
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    if (!editName.trim()) {
+      Alert.alert("Error", "Name cannot be empty.");
+      return;
+    }
+    setEditLoading(true);
+    try {
+      // update locally — freeapi doesn't have update profile endpoint
       if (user) {
-        setUser({ ...user, avatar: result.assets[0].uri });
+        setUser({ ...user, name: editName.trim(), email: editEmail.trim() });
       }
-      setAvatarLoading(false);
+      setEditVisible(false);
+      Alert.alert("Success", "Profile updated successfully.");
+    } catch {
+      Alert.alert("Error", "Failed to update profile.");
+    } finally {
+      setEditLoading(false);
     }
   };
 
@@ -112,8 +133,6 @@ export default function ProfileScreen() {
           style={{ paddingTop: insets.top + 12 }}
         >
           <Text className="text-white text-2xl font-bold mb-6">Profile</Text>
-
-          {/* Avatar + info */}
           <View className="items-center">
             <TouchableOpacity
               onPress={handlePickAvatar}
@@ -122,10 +141,7 @@ export default function ProfileScreen() {
             >
               <View
                 className="w-24 h-24 rounded-full bg-white/20 items-center justify-center overflow-hidden"
-                style={{
-                  borderWidth: 3,
-                  borderColor: "rgba(255,255,255,0.4)",
-                }}
+                style={{ borderWidth: 3, borderColor: "rgba(255,255,255,0.4)" }}
               >
                 {user?.avatar ? (
                   <Image
@@ -141,20 +157,13 @@ export default function ProfileScreen() {
                   </Text>
                 )}
               </View>
-              {/* Camera badge */}
               <View
                 className="absolute bottom-0 right-0 w-8 h-8 bg-white rounded-full items-center justify-center"
-                style={{
-                  shadowColor: "#000",
-                  shadowOpacity: 0.15,
-                  shadowRadius: 4,
-                  elevation: 4,
-                }}
+                style={{ elevation: 4 }}
               >
                 <Ionicons name="camera" size={15} color={COLORS.primary} />
               </View>
             </TouchableOpacity>
-
             <Text className="text-white font-bold text-xl mt-3">
               {user?.name ?? "User"}
             </Text>
@@ -166,7 +175,8 @@ export default function ProfileScreen() {
 
         {/* Stats */}
         <View className="flex-row px-5 gap-3 mt-5">
-          <View
+          {/* Enrolled → webview */}
+          <TouchableOpacity
             className="flex-1 bg-card rounded-2xl p-4 items-center"
             style={{
               elevation: 2,
@@ -175,6 +185,8 @@ export default function ProfileScreen() {
               shadowRadius: 6,
               shadowOffset: { width: 0, height: 2 },
             }}
+            onPress={() => router.push("/(tabs)/webview")}
+            activeOpacity={0.8}
           >
             <View className="w-10 h-10 bg-primary/10 rounded-xl items-center justify-center mb-2">
               <Ionicons name="book-outline" size={20} color={COLORS.primary} />
@@ -183,9 +195,10 @@ export default function ProfileScreen() {
               {enrollments.length}
             </Text>
             <Text className="text-textMuted text-xs mt-0.5">Enrolled</Text>
-          </View>
+          </TouchableOpacity>
 
-          <View
+          {/* Bookmarks → bookmarks tab */}
+          <TouchableOpacity
             className="flex-1 bg-card rounded-2xl p-4 items-center"
             style={{
               elevation: 2,
@@ -194,6 +207,8 @@ export default function ProfileScreen() {
               shadowRadius: 6,
               shadowOffset: { width: 0, height: 2 },
             }}
+            onPress={() => router.push("/(tabs)/bookmarks")}
+            activeOpacity={0.8}
           >
             <View className="w-10 h-10 bg-warning/10 rounded-xl items-center justify-center mb-2">
               <Ionicons
@@ -206,8 +221,9 @@ export default function ProfileScreen() {
               {bookmarks.length}
             </Text>
             <Text className="text-textMuted text-xs mt-0.5">Bookmarks</Text>
-          </View>
+          </TouchableOpacity>
 
+          {/* Completed → static */}
           <View
             className="flex-1 bg-card rounded-2xl p-4 items-center"
             style={{
@@ -244,7 +260,6 @@ export default function ProfileScreen() {
           <Text className="text-textMuted text-xs font-bold uppercase tracking-widest px-4 pt-4 pb-2">
             Preferences
           </Text>
-
           <SettingRow
             icon="moon-outline"
             iconBg="#EDE9FE"
@@ -255,17 +270,12 @@ export default function ProfileScreen() {
               <Switch
                 value={isDark}
                 onValueChange={(v) => setTheme(v ? "dark" : "light")}
-                trackColor={{
-                  false: COLORS.border,
-                  true: COLORS.primary,
-                }}
+                trackColor={{ false: COLORS.border, true: COLORS.primary }}
                 thumbColor="white"
               />
             }
           />
-
           <View className="h-px bg-border mx-4" />
-
           <SettingRow
             icon="notifications-outline"
             iconBg="#FEF3C7"
@@ -276,10 +286,7 @@ export default function ProfileScreen() {
               <Switch
                 value={notificationsEnabled}
                 onValueChange={toggleNotifications}
-                trackColor={{
-                  false: COLORS.border,
-                  true: COLORS.primary,
-                }}
+                trackColor={{ false: COLORS.border, true: COLORS.primary }}
                 thumbColor="white"
               />
             }
@@ -300,19 +307,18 @@ export default function ProfileScreen() {
           <Text className="text-textMuted text-xs font-bold uppercase tracking-widest px-4 pt-4 pb-2">
             Account
           </Text>
-
           <SettingRow
             icon="person-outline"
             iconBg="#EFF6FF"
             iconColor={COLORS.primary}
             label="Edit Profile"
-            onPress={() =>
-              Alert.alert("Coming Soon", "Edit profile coming soon.")
-            }
+            onPress={() => {
+              setEditName(user?.name ?? "");
+              setEditEmail(user?.email ?? "");
+              setEditVisible(true);
+            }}
           />
-
           <View className="h-px bg-border mx-4" />
-
           <SettingRow
             icon="shield-checkmark-outline"
             iconBg="#DCFCE7"
@@ -322,9 +328,7 @@ export default function ProfileScreen() {
               Alert.alert("Coming Soon", "Privacy settings coming soon.")
             }
           />
-
           <View className="h-px bg-border mx-4" />
-
           <SettingRow
             icon="help-circle-outline"
             iconBg="#F0F9FF"
@@ -348,7 +352,6 @@ export default function ProfileScreen() {
           <Text className="text-textMuted text-xs font-bold uppercase tracking-widest px-4 pt-4 pb-2">
             App
           </Text>
-
           <SettingRow
             icon="information-circle-outline"
             iconBg="#F8FAFC"
@@ -371,6 +374,99 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Edit Profile Modal */}
+      <Modal
+        visible={editVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setEditVisible(false)}
+      >
+        <View
+          className="flex-1 justify-end"
+          style={{ backgroundColor: "rgba(0,0,0,0.4)" }}
+        >
+          <View className="bg-card rounded-t-[32px] px-5 pt-5 pb-8">
+            {/* Handle */}
+            <View className="w-10 h-1 bg-border rounded-full self-center mb-5" />
+
+            <View className="flex-row items-center justify-between mb-5">
+              <Text className="text-text font-bold text-lg">Edit Profile</Text>
+              <TouchableOpacity onPress={() => setEditVisible(false)}>
+                <Ionicons name="close" size={22} color={COLORS.textMuted} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Name */}
+            <Text className="text-text font-semibold text-sm mb-2">
+              Display Name
+            </Text>
+            <View
+              className="flex-row items-center bg-background border border-border rounded-xl px-4 mb-4"
+              style={{ height: 52 }}
+            >
+              <Ionicons
+                name="person-outline"
+                size={18}
+                color={COLORS.textMuted}
+              />
+              <TextInput
+                className="flex-1 ml-3 text-text text-sm"
+                placeholder="Enter your name"
+                placeholderTextColor={COLORS.textMuted}
+                value={editName}
+                onChangeText={setEditName}
+              />
+            </View>
+
+            {/* Email */}
+            <Text className="text-text font-semibold text-sm mb-2">Email</Text>
+            <View
+              className="flex-row items-center bg-background border border-border rounded-xl px-4 mb-6"
+              style={{ height: 52 }}
+            >
+              <Ionicons
+                name="mail-outline"
+                size={18}
+                color={COLORS.textMuted}
+              />
+              <TextInput
+                className="flex-1 ml-3 text-text text-sm"
+                placeholder="Enter your email"
+                placeholderTextColor={COLORS.textMuted}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                value={editEmail}
+                onChangeText={setEditEmail}
+              />
+            </View>
+
+            {/* Save */}
+            <TouchableOpacity
+              onPress={handleSaveProfile}
+              disabled={editLoading}
+              className="bg-primary rounded-xl items-center justify-center"
+              style={{
+                height: 52,
+                elevation: 4,
+                shadowColor: COLORS.primary,
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                shadowOffset: { width: 0, height: 4 },
+              }}
+              activeOpacity={0.85}
+            >
+              {editLoading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text className="text-white font-bold text-base">
+                  Save Changes
+                </Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }

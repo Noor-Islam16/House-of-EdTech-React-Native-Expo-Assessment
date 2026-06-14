@@ -4,18 +4,17 @@ import { COLORS } from "@src/constants/colors";
 import { authApi } from "@src/services/api/authApi";
 import { useAuthStore } from "@src/store";
 import { Link, router } from "expo-router";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { z } from "zod";
 
@@ -98,9 +97,9 @@ export default function RegisterScreen() {
     },
     {
       name: "email",
-      label: "Email",
+      label: "Email address",
       icon: "mail-outline",
-      placeholder: "Enter your email",
+      placeholder: "you@example.com",
       keyboardType: "email-address",
       autoCapitalize: "none",
     },
@@ -108,7 +107,7 @@ export default function RegisterScreen() {
       name: "password",
       label: "Password",
       icon: "lock-closed-outline",
-      placeholder: "Create a password",
+      placeholder: "Min. 6 characters",
       secure: true,
       toggle: true,
       show: showPassword,
@@ -117,9 +116,9 @@ export default function RegisterScreen() {
     },
     {
       name: "confirmPassword",
-      label: "Confirm Password",
-      icon: "lock-closed-outline",
-      placeholder: "Confirm your password",
+      label: "Confirm password",
+      icon: "shield-checkmark-outline",
+      placeholder: "Re-enter your password",
       secure: true,
       toggle: true,
       show: showConfirm,
@@ -129,145 +128,193 @@ export default function RegisterScreen() {
   ];
 
   return (
-    <KeyboardAvoidingView
+    <KeyboardAwareScrollView
       className="flex-1 bg-background"
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      contentContainerStyle={{ flexGrow: 1 }}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+      enableOnAndroid
+      extraScrollHeight={20}
+      enableAutomaticScroll
     >
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
+        {/* ── Header ── */}
         <View
-          className="bg-primary px-5 pb-8 rounded-b-[36px]"
-          style={{ paddingTop: insets.top + 12 }}
+          className="bg-primary overflow-hidden"
+          style={{ paddingTop: insets.top + 16, paddingBottom: 48 }}
         >
-          <TouchableOpacity
-            onPress={() => router.back()}
-            className="w-10 h-10 bg-white/20 rounded-full items-center justify-center mb-5"
-          >
-            <Ionicons name="arrow-back" size={20} color="white" />
-          </TouchableOpacity>
+          {/* Decorative circles */}
+          <View
+            className="absolute bg-white/10 rounded-full"
+            style={{ width: 180, height: 180, top: -50, right: -40 }}
+          />
+          <View
+            className="absolute bg-white/5 rounded-full"
+            style={{ width: 110, height: 110, top: 50, right: 55 }}
+          />
+          <View
+            className="absolute bg-white/10 rounded-full"
+            style={{ width: 70, height: 70, bottom: -15, left: -15 }}
+          />
 
-          <View className="w-14 h-14 bg-white/20 rounded-2xl items-center justify-center mb-4">
-            <Ionicons name="school" size={28} color="white" />
+          <View className="px-6">
+            {/* Back button */}
+            <TouchableOpacity
+              onPress={() => router.back()}
+              className="w-10 h-10 bg-white/20 rounded-full items-center justify-center mb-6"
+            >
+              <Ionicons name="arrow-back" size={20} color="white" />
+            </TouchableOpacity>
+
+            {/* Icon pill */}
+            <View className="bg-white/20 self-start rounded-2xl p-3 mb-5">
+              <Ionicons name="school" size={26} color="white" />
+            </View>
+
+            <Text className="text-white/60 text-xs font-semibold tracking-widest uppercase mb-1">
+              Get started
+            </Text>
+            <Text className="text-white text-4xl font-bold leading-tight">
+              Create your{"\n"}account
+            </Text>
           </View>
-
-          <Text className="text-white text-3xl font-bold">Create Account</Text>
-          <Text className="text-white/70 text-sm mt-1">
-            Start your learning journey today
-          </Text>
         </View>
 
-        {/* Form */}
-        <View className="px-5 pt-6 pb-8">
-          {/* API Error */}
-          {apiError && (
-            <View className="flex-row items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-5">
-              <Ionicons name="alert-circle" size={18} color={COLORS.error} />
-              <Text className="text-red-600 text-sm flex-1">{apiError}</Text>
-            </View>
-          )}
+        {/* ── Sheet overlay ── */}
+        <View
+          className="bg-background"
+          style={{
+            borderTopLeftRadius: 32,
+            borderTopRightRadius: 32,
+            marginTop: -24,
+          }}
+        >
+          <View className="px-6 pt-8 pb-10">
+            {/* API Error */}
+            {apiError && (
+              <View className="flex-row items-center gap-3 bg-red-50 border border-red-200 rounded-2xl px-4 py-3 mb-5">
+                <View className="bg-red-100 rounded-full p-1">
+                  <Ionicons
+                    name="alert-circle"
+                    size={16}
+                    color={COLORS.error}
+                  />
+                </View>
+                <Text className="text-red-600 text-sm flex-1 font-medium">
+                  {apiError}
+                </Text>
+              </View>
+            )}
 
-          {fields.map((f) => (
-            <View key={f.name} className="mb-4">
-              <Text className="text-text text-sm font-semibold mb-2">
-                {f.label}
-              </Text>
-              <Controller
-                control={control}
-                name={f.name}
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <View
-                    className={`flex-row items-center bg-card rounded-xl px-4 border ${
-                      errors[f.name] ? "border-red-400" : "border-border"
-                    }`}
-                    style={{ height: 52 }}
-                  >
-                    <Ionicons
-                      name={f.icon}
-                      size={19}
-                      color={COLORS.textMuted}
-                    />
-                    <TextInput
-                      className="flex-1 text-text text-sm ml-3"
-                      placeholder={f.placeholder}
-                      placeholderTextColor={COLORS.textMuted}
-                      secureTextEntry={f.secure && !f.show}
-                      autoCapitalize={f.autoCapitalize ?? "none"}
-                      keyboardType={f.keyboardType ?? "default"}
-                      value={value}
-                      onChangeText={onChange}
-                      onBlur={onBlur}
-                    />
-                    {f.toggle && (
-                      <TouchableOpacity
-                        onPress={() => f.setShow?.(!f.show)}
-                        className="p-1"
-                      >
+            {fields.map((f) => (
+              <View key={f.name} className="mb-4">
+                <Text className="text-text text-sm font-semibold mb-2 ml-1">
+                  {f.label}
+                </Text>
+                <Controller
+                  control={control}
+                  name={f.name}
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <View
+                      className={`flex-row items-center bg-card rounded-2xl px-4 border ${
+                        errors[f.name] ? "border-red-400" : "border-border"
+                      }`}
+                      style={{ height: 54 }}
+                    >
+                      <View className="bg-primary/10 rounded-xl p-1.5 mr-3">
                         <Ionicons
-                          name={f.show ? "eye-off-outline" : "eye-outline"}
-                          size={19}
-                          color={COLORS.textMuted}
+                          name={f.icon}
+                          size={17}
+                          color={COLORS.primary}
                         />
-                      </TouchableOpacity>
-                    )}
-                  </View>
+                      </View>
+                      <TextInput
+                        className="flex-1 text-text text-sm"
+                        placeholder={f.placeholder}
+                        placeholderTextColor={COLORS.textMuted}
+                        secureTextEntry={f.secure && !f.show}
+                        autoCapitalize={f.autoCapitalize ?? "none"}
+                        keyboardType={f.keyboardType ?? "default"}
+                        value={value}
+                        onChangeText={onChange}
+                        onBlur={onBlur}
+                      />
+                      {f.toggle && (
+                        <TouchableOpacity
+                          onPress={() => f.setShow?.(!f.show)}
+                          className="p-1.5"
+                        >
+                          <Ionicons
+                            name={f.show ? "eye-off-outline" : "eye-outline"}
+                            size={18}
+                            color={COLORS.textMuted}
+                          />
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  )}
+                />
+                {errors[f.name] && (
+                  <Text className="text-red-500 text-xs mt-1.5 ml-1">
+                    {errors[f.name]?.message}
+                  </Text>
                 )}
-              />
-              {errors[f.name] && (
-                <Text className="text-red-500 text-xs mt-1 ml-1">
-                  {errors[f.name]?.message}
+              </View>
+            ))}
+
+            {/* Submit */}
+            <TouchableOpacity
+              className="bg-primary rounded-2xl items-center justify-center mt-4"
+              style={{
+                height: 54,
+                shadowColor: COLORS.primary,
+                shadowOffset: { width: 0, height: 6 },
+                shadowOpacity: 0.35,
+                shadowRadius: 12,
+                elevation: 8,
+              }}
+              onPress={handleSubmit(onSubmit)}
+              disabled={isSubmitting}
+              activeOpacity={0.85}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text className="text-white font-bold text-base tracking-wide">
+                  Create Account
                 </Text>
               )}
-            </View>
-          ))}
+            </TouchableOpacity>
 
-          {/* Submit */}
-          <TouchableOpacity
-            className="bg-primary rounded-xl items-center justify-center mt-3"
-            style={{
-              height: 52,
-              shadowColor: COLORS.primary,
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
-              shadowRadius: 8,
-              elevation: 6,
-            }}
-            onPress={handleSubmit(onSubmit)}
-            disabled={isSubmitting}
-            activeOpacity={0.85}
-          >
-            {isSubmitting ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text className="text-white font-bold text-base">
-                Create Account
+            {/* Divider */}
+            <View className="flex-row items-center my-6">
+              <View className="flex-1 h-px bg-border" />
+              <Text className="text-textMuted text-xs mx-4 font-medium">
+                OR
               </Text>
-            )}
-          </TouchableOpacity>
+              <View className="flex-1 h-px bg-border" />
+            </View>
 
-          {/* Divider */}
-          <View className="flex-row items-center my-6">
-            <View className="flex-1 h-px bg-border" />
-            <Text className="text-textMuted text-sm mx-4">or</Text>
-            <View className="flex-1 h-px bg-border" />
-          </View>
-
-          {/* Login link */}
-          <View className="flex-row justify-center items-center">
-            <Text className="text-textMuted text-sm">
-              Already have an account?{" "}
-            </Text>
-            <Link href="/(auth)/login" asChild>
-              <TouchableOpacity>
-                <Text className="text-primary font-bold text-sm">Login</Text>
-              </TouchableOpacity>
-            </Link>
+            {/* Login link */}
+            <View className="flex-row justify-center items-center gap-1">
+              <Text className="text-textMuted text-sm">
+                Already have an account?
+              </Text>
+              <Link href="/(auth)/login" asChild>
+                <TouchableOpacity>
+                  <Text className="text-primary font-bold text-sm">
+                    Sign In
+                  </Text>
+                </TouchableOpacity>
+              </Link>
+            </View>
           </View>
         </View>
       </ScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardAwareScrollView>
   );
 }

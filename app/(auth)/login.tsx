@@ -8,6 +8,7 @@ import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   ActivityIndicator,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -16,10 +17,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import {
-  heightPercentageToDP as hp,
-  widthPercentageToDP as wp,
-} from "react-native-responsive-screen";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { z } from "zod";
 
@@ -42,6 +39,7 @@ export default function LoginScreen() {
     formState: { errors, isSubmitting },
   } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
+    defaultValues: { email: "", password: "" },
   });
 
   const onSubmit = async (data: LoginForm) => {
@@ -59,7 +57,7 @@ export default function LoginScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: COLORS.background }}
+      className="flex-1 bg-background"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
@@ -67,293 +65,219 @@ export default function LoginScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
+        {/* ── Header ── */}
         <View
-          style={{
-            paddingTop: insets.top + hp("2%"),
-            paddingBottom: hp("4%"),
-            paddingHorizontal: wp("6%"),
-            backgroundColor: COLORS.primary,
-            borderBottomLeftRadius: 40,
-            borderBottomRightRadius: 40,
-          }}
+          className="bg-primary overflow-hidden"
+          style={{ paddingTop: insets.top + 24, paddingBottom: 48 }}
         >
+          {/* Decorative circles */}
           <View
-            style={{
-              width: wp("14%"),
-              height: wp("14%"),
-              backgroundColor: "rgba(255,255,255,0.2)",
-              borderRadius: 16,
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: hp("2%"),
-            }}
-          >
-            <Ionicons name="school" size={wp("7%")} color="white" />
+            className="absolute bg-white/10 rounded-full"
+            style={{ width: 200, height: 200, top: -60, right: -50 }}
+          />
+          <View
+            className="absolute bg-white/5 rounded-full"
+            style={{ width: 130, height: 130, top: 40, right: 60 }}
+          />
+          <View
+            className="absolute bg-white/10 rounded-full"
+            style={{ width: 80, height: 80, bottom: -20, left: -20 }}
+          />
+
+          <View className="px-6">
+            {/* Logo pill */}
+            <View className="bg-white/20 self-start rounded-2xl p-3 mb-6">
+              <Image
+                source={require("../../assets/images/logo.png")}
+                className="w-8 h-8"
+                resizeMode="contain"
+              />
+            </View>
+
+            <Text className="text-white/60 text-xs font-semibold tracking-widest uppercase mb-1">
+              Welcome back
+            </Text>
+            <Text className="text-white text-4xl font-bold leading-tight">
+              Sign in to{"\n"}your account
+            </Text>
           </View>
-          <Text
-            style={{
-              color: "white",
-              fontSize: wp("7%"),
-              fontWeight: "bold",
-            }}
-          >
-            Welcome Back
-          </Text>
-          <Text
-            style={{
-              color: "rgba(255,255,255,0.7)",
-              fontSize: wp("4%"),
-              marginTop: 4,
-            }}
-          >
-            Continue your learning journey
-          </Text>
         </View>
 
-        {/* Form */}
-        <View style={{ paddingHorizontal: wp("6%"), paddingTop: hp("4%") }}>
-          {/* API Error */}
-          {apiError && (
-            <View
-              style={{
-                backgroundColor: "rgba(239,68,68,0.1)",
-                borderColor: "rgba(239,68,68,0.3)",
-                borderWidth: 1,
-                borderRadius: 12,
-                paddingHorizontal: wp("4%"),
-                paddingVertical: hp("1.5%"),
-                marginBottom: hp("2%"),
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 8,
-              }}
-            >
-              <Ionicons name="alert-circle" size={18} color={COLORS.error} />
-              <Text
-                style={{ color: COLORS.error, fontSize: wp("3.5%"), flex: 1 }}
-              >
-                {apiError}
-              </Text>
-            </View>
-          )}
-
-          {/* Email */}
-          <View style={{ marginBottom: hp("2%") }}>
-            <Text
-              style={{
-                color: COLORS.text,
-                fontWeight: "600",
-                marginBottom: hp("1%"),
-                fontSize: wp("3.5%"),
-              }}
-            >
-              Email
-            </Text>
-            <Controller
-              control={control}
-              name="email"
-              render={({ field: { onChange, value } }) => (
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    backgroundColor: COLORS.card,
-                    borderWidth: 1,
-                    borderColor: errors.email ? COLORS.error : COLORS.border,
-                    borderRadius: 12,
-                    paddingHorizontal: wp("4%"),
-                    height: hp("7%"),
-                  }}
-                >
+        {/* ── Wave cutout illusion ── */}
+        <View className="bg-primary h-6 -mb-6" />
+        <View
+          className="bg-background"
+          style={{
+            borderTopLeftRadius: 32,
+            borderTopRightRadius: 32,
+            marginTop: -24,
+          }}
+        >
+          {/* ── Form Card ── */}
+          <View className="px-6 pt-8 pb-10">
+            {/* API Error */}
+            {apiError && (
+              <View className="flex-row items-center gap-3 bg-red-50 border border-red-200 rounded-2xl px-4 py-3 mb-5">
+                <View className="bg-red-100 rounded-full p-1">
                   <Ionicons
-                    name="mail-outline"
-                    size={20}
-                    color={COLORS.textMuted}
-                  />
-                  <TextInput
-                    style={{
-                      flex: 1,
-                      marginLeft: wp("3%"),
-                      color: COLORS.text,
-                      fontSize: wp("4%"),
-                    }}
-                    placeholder="Enter your email"
-                    placeholderTextColor={COLORS.textMuted}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    value={value}
-                    onChangeText={onChange}
+                    name="alert-circle"
+                    size={16}
+                    color={COLORS.error}
                   />
                 </View>
-              )}
-            />
-            {errors.email && (
-              <Text
-                style={{
-                  color: COLORS.error,
-                  fontSize: wp("3%"),
-                  marginTop: 4,
-                  marginLeft: 4,
-                }}
-              >
-                {errors.email.message}
-              </Text>
+                <Text className="text-red-600 text-sm flex-1 font-medium">
+                  {apiError}
+                </Text>
+              </View>
             )}
-          </View>
 
-          {/* Password */}
-          <View style={{ marginBottom: hp("3%") }}>
-            <Text
-              style={{
-                color: COLORS.text,
-                fontWeight: "600",
-                marginBottom: hp("1%"),
-                fontSize: wp("3.5%"),
-              }}
-            >
-              Password
-            </Text>
-            <Controller
-              control={control}
-              name="password"
-              render={({ field: { onChange, value } }) => (
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    backgroundColor: COLORS.card,
-                    borderWidth: 1,
-                    borderColor: errors.password ? COLORS.error : COLORS.border,
-                    borderRadius: 12,
-                    paddingHorizontal: wp("4%"),
-                    height: hp("7%"),
-                  }}
-                >
-                  <Ionicons
-                    name="lock-closed-outline"
-                    size={20}
-                    color={COLORS.textMuted}
-                  />
-                  <TextInput
-                    style={{
-                      flex: 1,
-                      marginLeft: wp("3%"),
-                      color: COLORS.text,
-                      fontSize: wp("4%"),
-                    }}
-                    placeholder="Enter your password"
-                    placeholderTextColor={COLORS.textMuted}
-                    secureTextEntry={!showPassword}
-                    value={value}
-                    onChangeText={onChange}
-                  />
-                  <TouchableOpacity onPress={() => setShowPassword((p) => !p)}>
-                    <Ionicons
-                      name={showPassword ? "eye-off-outline" : "eye-outline"}
-                      size={20}
-                      color={COLORS.textMuted}
+            {/* Email */}
+            <View className="mb-4">
+              <Text className="text-text font-semibold text-sm mb-2 ml-1">
+                Email address
+              </Text>
+              <Controller
+                control={control}
+                name="email"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <View
+                    className={`flex-row items-center bg-card rounded-2xl px-4 border ${
+                      errors.email ? "border-red-400" : "border-border"
+                    }`}
+                    style={{ height: 54 }}
+                  >
+                    <View className="bg-primary/10 rounded-xl p-1.5 mr-3">
+                      <Ionicons
+                        name="mail-outline"
+                        size={17}
+                        color={COLORS.primary}
+                      />
+                    </View>
+                    <TextInput
+                      className="flex-1 text-text text-sm"
+                      placeholder="you@example.com"
+                      placeholderTextColor={COLORS.textMuted}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      value={value}
+                      onChangeText={onChange}
+                      onBlur={onBlur}
                     />
-                  </TouchableOpacity>
-                </View>
+                  </View>
+                )}
+              />
+              {errors.email && (
+                <Text className="text-red-500 text-xs mt-1.5 ml-1">
+                  {errors.email.message}
+                </Text>
               )}
-            />
-            {errors.password && (
-              <Text
-                style={{
-                  color: COLORS.error,
-                  fontSize: wp("3%"),
-                  marginTop: 4,
-                  marginLeft: 4,
-                }}
-              >
-                {errors.password.message}
+            </View>
+
+            {/* Password */}
+            <View className="mb-2">
+              <Text className="text-text font-semibold text-sm mb-2 ml-1">
+                Password
               </Text>
-            )}
-          </View>
+              <Controller
+                control={control}
+                name="password"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <View
+                    className={`flex-row items-center bg-card rounded-2xl px-4 border ${
+                      errors.password ? "border-red-400" : "border-border"
+                    }`}
+                    style={{ height: 54 }}
+                  >
+                    <View className="bg-primary/10 rounded-xl p-1.5 mr-3">
+                      <Ionicons
+                        name="lock-closed-outline"
+                        size={17}
+                        color={COLORS.primary}
+                      />
+                    </View>
+                    <TextInput
+                      className="flex-1 text-text text-sm"
+                      placeholder="Min. 6 characters"
+                      placeholderTextColor={COLORS.textMuted}
+                      secureTextEntry={!showPassword}
+                      autoCapitalize="none"
+                      value={value}
+                      onChangeText={onChange}
+                      onBlur={onBlur}
+                    />
+                    <TouchableOpacity
+                      onPress={() => setShowPassword((p) => !p)}
+                      className="p-1.5"
+                    >
+                      <Ionicons
+                        name={showPassword ? "eye-off-outline" : "eye-outline"}
+                        size={18}
+                        color={COLORS.textMuted}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                )}
+              />
+              {errors.password && (
+                <Text className="text-red-500 text-xs mt-1.5 ml-1">
+                  {errors.password.message}
+                </Text>
+              )}
+            </View>
 
-          {/* Login Button */}
-          <TouchableOpacity
-            style={{
-              backgroundColor: COLORS.primary,
-              borderRadius: 12,
-              height: hp("7%"),
-              alignItems: "center",
-              justifyContent: "center",
-              shadowColor: COLORS.primary,
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
-              shadowRadius: 8,
-              elevation: 6,
-            }}
-            onPress={handleSubmit(onSubmit)}
-            disabled={isSubmitting}
-            activeOpacity={0.85}
-          >
-            {isSubmitting ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text
-                style={{
-                  color: "white",
-                  fontWeight: "bold",
-                  fontSize: wp("4%"),
-                }}
-              >
-                Login
-              </Text>
-            )}
-          </TouchableOpacity>
-
-          {/* Divider */}
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              marginVertical: hp("3%"),
-            }}
-          >
-            <View
-              style={{ flex: 1, height: 1, backgroundColor: COLORS.border }}
-            />
-            <Text
-              style={{
-                color: COLORS.textMuted,
-                fontSize: wp("3.5%"),
-                marginHorizontal: wp("4%"),
-              }}
-            >
-              or
-            </Text>
-            <View
-              style={{ flex: 1, height: 1, backgroundColor: COLORS.border }}
-            />
-          </View>
-
-          {/* Register Link */}
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Text style={{ color: COLORS.textMuted, fontSize: wp("3.5%") }}>
-              Don't have an account?{" "}
-            </Text>
-            <Link href="/(auth)/register" asChild>
+            {/* Forgot password */}
+            <View className="items-end mb-7">
               <TouchableOpacity>
-                <Text
-                  style={{
-                    color: COLORS.primary,
-                    fontWeight: "bold",
-                    fontSize: wp("3.5%"),
-                  }}
-                >
-                  Sign Up
+                <Text className="text-primary text-sm font-semibold">
+                  Forgot password?
                 </Text>
               </TouchableOpacity>
-            </Link>
+            </View>
+
+            {/* Login Button */}
+            <TouchableOpacity
+              className="bg-primary rounded-2xl items-center justify-center"
+              style={{
+                height: 54,
+                shadowColor: COLORS.primary,
+                shadowOffset: { width: 0, height: 6 },
+                shadowOpacity: 0.35,
+                shadowRadius: 12,
+                elevation: 8,
+              }}
+              onPress={handleSubmit(onSubmit)}
+              disabled={isSubmitting}
+              activeOpacity={0.85}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text className="text-white font-bold text-base tracking-wide">
+                  Sign In
+                </Text>
+              )}
+            </TouchableOpacity>
+
+            {/* Divider */}
+            <View className="flex-row items-center my-6">
+              <View className="flex-1 h-px bg-border" />
+              <Text className="text-textMuted text-xs mx-4 font-medium">
+                OR
+              </Text>
+              <View className="flex-1 h-px bg-border" />
+            </View>
+
+            {/* Register Link */}
+            <View className="flex-row justify-center items-center gap-1">
+              <Text className="text-textMuted text-sm">New here?</Text>
+              <Link href="/(auth)/register" asChild>
+                <TouchableOpacity>
+                  <Text className="text-primary font-bold text-sm">
+                    Create an account
+                  </Text>
+                </TouchableOpacity>
+              </Link>
+            </View>
           </View>
         </View>
       </ScrollView>

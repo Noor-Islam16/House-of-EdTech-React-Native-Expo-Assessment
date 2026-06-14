@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
 import { create } from "zustand";
 
@@ -34,6 +35,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: async () => {
     await SecureStore.deleteItemAsync("accessToken");
     await SecureStore.deleteItemAsync("user");
+    await AsyncStorage.multiRemove(["bookmarks", "enrollments"]);
+    const { useCourseStore } = await import("./courseStore");
+    useCourseStore.setState({ bookmarks: [], enrollments: [] });
     set({ user: null, token: null, isAuthenticated: false });
   },
 
@@ -48,7 +52,6 @@ export const useAuthStore = create<AuthState>((set) => ({
         set({ user, token, isAuthenticated: true });
       }
     } catch {
-      // corrupt data — clear
       await SecureStore.deleteItemAsync("accessToken");
       await SecureStore.deleteItemAsync("user");
     } finally {
